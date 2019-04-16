@@ -4,23 +4,30 @@ import com.example.timesheet.exception.PPBusinessException;
 import com.example.timesheet.exception.PPItemNotExistException;
 import com.example.timesheet.model.*;
 import com.example.timesheet.repository.*;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.support.Repositories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
 @Service
+@Transactional
 public class MainService {
     @Autowired
     private YongHuRepository yongHuRepository;
@@ -37,6 +44,9 @@ public class MainService {
     @Autowired
     private ZhiFuRepository zhiFuRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private Repositories repositories;
 
     public MainService(ListableBeanFactory listableBeanFactory) {
@@ -44,6 +54,47 @@ public class MainService {
     }
 
     // -用户
+
+    /**
+     * 新建用户
+     *
+     * @param yongHuMing 用户名
+     * @param password   密码
+     * @param hourCost   小时费用
+     */
+    public YongHu createYongHu(String yongHuMing, String password, BigDecimal hourCost) {
+        YongHu yongHu = new YongHu(null, yongHuMing, passwordEncoder.encode(password), hourCost, Arrays.asList("USER"));
+
+        return yongHuRepository.save(yongHu);
+    }
+
+    /**
+     * 删除用户
+     * <p>
+     * 1) Admin不允许删除
+     *
+     * @param id 用户id
+     */
+    public void deleteYongHu(Long id) {
+        YongHu yongHu = gainEntityWithExistsChecking(YongHu.class, id);
+        if (yongHu.getYongHuMing().equals("Admin")) {
+            throw new PPBusinessException("不允许删除管理员!");
+        }
+
+        yongHuRepository.deleteById(id);
+    }
+
+    /**
+     * 修改用户密码
+     *
+     * @param id          用户id
+     * @param newPassword 新密码
+     */
+    public void changePassword(Long id, String newPassword) {
+        YongHu yongHu = gainEntityWithExistsChecking(YongHu.class, id);
+
+        yongHu.setJiaMiMiMa(passwordEncoder.encode(newPassword));
+    }
     // -
 
     // -公司
@@ -326,10 +377,100 @@ public class MainService {
      * @param kaiShi   开始日期
      * @param jieShu   结束日期
      */
-    public JSONObject generateBaoGao(Long gongSiId, LocalDate kaiShi, LocalDate jieShu) {
-        JSONObject jsonObject = new JSONObject();
+    public JSONObject generateBaoGao(Long gongSiId, LocalDate kaiShi, LocalDate jieShu) throws JSONException {
+        // --查出结束日期前指定公司相关的工作记录和对应费用
+        JSONArray gongZuoJiLusJsonArray = new JSONArray();
 
-        return jsonObject;
+        List<GongZuoJiLu> gongZuoJiLus = gongZuoJiLuRepository.findGongSiGongZuoJiLu(gongSiId, jieShu.plusDays(1).atStartOfDay());
+
+        // 开始日期消费总额
+        BigDecimal kaiShiCostTotal = new BigDecimal(0);
+
+        // 结束日期消费总额
+        BigDecimal jieShuCostTotal = new BigDecimal(0);
+
+        for (GongZuoJiLu gongZuoJiLu : gongZuoJiLus) {
+            JSONObject jsonObject = new JSONObject();
+            XiangMu xiangMu = gongZuoJiLu.getXiangMu();
+            List<JiFeiBiaoZhun> jiFeiBiaoZhuns = xiangMu.getJiFeiBiaoZhuns();
+
+            Optional<JiFeiBiaoZhun> optionalJiFeiBiaoZhun = jiFeiBiaoZhuns.stream().filter(
+                    item -> item.getYongHu().getId() == gongZuoJiLu.getYongHu().getId()
+                            && item.getKaiShi().isBefore(gongZuoJiLu.getKaiShi().toLocalDate().plusDays(1))
+            ).findFirst();
+
+            if (!optionalJiFeiBiaoZhun.isPresent()) {
+                throw new PPBusinessException(gongZuoJiLu.toString() + ": 没有找到计费标准!");
+            }
+
+            BigDecimal hourCost = optionalJiFeiBiaoZhun.get().getXiaoShiFeiYong();
+            BigDecimal secondCost = hourCost.divide(new BigDecimal(3600));
+
+            Duration duration = Duration.between(gongZuoJiLu.getKaiShi(), gongZuoJiLu.getJieShu());
+            BigDecimal cost = secondCost.multiply(new BigDecimal(duration.getSeconds()));
+
+            if (gongZuoJiLu.getKaiShi().isBefore(kaiShi.atStartOfDay())) {
+                kaiShiCostTotal.add(cost);
+            }
+
+            jieShuCostTotal.add(cost);
+
+            if (
+                    (
+                            gongZuoJiLu.getKaiShi().toLocalDate().isEqual(kaiShi) || gongZuoJiLu.getKaiShi().toLocalDate().isAfter(kaiShi)
+                    ) && (
+                            gongZuoJiLu.getKaiShi().toLocalDate().isEqual(jieShu) || gongZuoJiLu.getKaiShi().toLocalDate().isBefore(jieShu)
+                    )
+
+            ) {
+                jsonObject.put("开始:", gongZuoJiLu.getKaiShi());
+                jsonObject.put("结束:", gongZuoJiLu.getJieShu());
+                jsonObject.put("项目:", gongZuoJiLu.getXiangMu().getMingCheng());
+                jsonObject.put("人员:", gongZuoJiLu.getYongHu().getYongHuMing());
+                jsonObject.put("耗时:", secondCost.divide(new BigDecimal(3600)));
+                jsonObject.put("费用:", cost);
+
+                gongZuoJiLusJsonArray.put(jsonObject);
+            }
+        }
+        // --
+
+        // --查出时间段内指定公司相关的支付
+        JSONArray zhiFusJsonArray = new JSONArray();
+
+        List<ZhiFu> zhiFus = zhiFuRepository.findGongSiZhiFu(gongSiId, kaiShi, jieShu.plusDays(1));
+
+        for (ZhiFu zhifu : zhiFus) {
+            JSONObject jsonObject = new JSONObject();
+
+            jsonObject.put("日期:", zhifu.getRiQi());
+            jsonObject.put("金额:", zhifu.getJingE());
+            jsonObject.put("备注:", zhifu.getBeiZhu());
+
+            zhiFusJsonArray.put(jsonObject);
+        }
+
+        // --
+
+        // --查出开始时公司Balance
+        BigDecimal kaiShiIncoming = zhiFuRepository.calIncomingTotal(gongSiId, kaiShi);
+        BigDecimal kaiShiBalance = kaiShiIncoming.min(kaiShiCostTotal);
+        // --
+
+        // --查出结束时公司Balance
+        BigDecimal jieShuIncoming = zhiFuRepository.calIncomingTotal(gongSiId, jieShu);
+        BigDecimal jieShuBalance = jieShuIncoming.min(jieShuCostTotal);
+        // --
+
+        JSONObject reportJsonObject = new JSONObject();
+        reportJsonObject.put("开始:", kaiShi);
+        reportJsonObject.put("结束:", kaiShi);
+        reportJsonObject.put("期初Balance:", kaiShiBalance);
+        reportJsonObject.put("期末Balance:", jieShuBalance);
+        reportJsonObject.put("消费记录:", gongZuoJiLusJsonArray);
+        reportJsonObject.put("充值记录:", zhiFusJsonArray);
+
+        return reportJsonObject;
     }
     // -
 

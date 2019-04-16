@@ -57,6 +57,10 @@
             <artifactId>android-json</artifactId>
             <version>0.0.20131108.vaadin1</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -71,7 +75,6 @@
                 <version>3.0.0</version>
                 <configuration>
                     <source>1.8</source>
-                    <target>1.8</target>
                     <show>private</show>
                 </configuration>
             </plugin>

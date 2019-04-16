@@ -47,6 +47,7 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
      */
     @ElementCollection
     @Valid
+    @OrderBy("kaiShi DESC")
     private List<JiFeiBiaoZhun> jiFeiBiaoZhuns;
 
     /**
@@ -146,12 +147,12 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
         }
     }
 
-    @Override
-    public void validate() {
-        if (jiFeiBiaoZhuns == null || jiFeiBiaoZhuns.isEmpty()) {
-            throw new PPBusinessException("计费标准列表至少要有1项!");
-        }
-    }
+//    @Override
+//    public void validate() {
+//        if (jiFeiBiaoZhuns == null || jiFeiBiaoZhuns.isEmpty()) {
+//            throw new PPBusinessException("计费标准列表至少要有1项!");
+//        }
+//    }
 
     @Override
     public String toString() {
