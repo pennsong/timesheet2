@@ -73,7 +73,7 @@ public class MainController {
     }
 
     @Data
-    private static class CreateYongHuDto {
+    public static class CreateYongHuDto {
         @NotEmpty
         @Size(min = 2)
         String yongHuMing;
@@ -110,7 +110,7 @@ public class MainController {
     }
 
     @Data
-    private static class YongHuPasswordDto {
+    public static class YongHuPasswordDto {
         @NotNull
         Long yongHuId;
 
@@ -131,7 +131,7 @@ public class MainController {
     }
 
     @Data
-    private static class CreateGongSiDto {
+    public static class CreateGongSiDto {
         @NotEmpty
         String mingCheng;
     }
@@ -159,7 +159,7 @@ public class MainController {
     }
 
     @Data
-    private static class SetGongSiMingChengDto {
+    public static class SetGongSiMingChengDto {
         @NotNull
         Long id;
 
@@ -179,7 +179,7 @@ public class MainController {
     }
 
     @Data
-    private static class SetGongSiJieSuanRiDto {
+    public static class SetGongSiJieSuanRiDto {
         @NotNull
         Long id;
 
@@ -199,7 +199,7 @@ public class MainController {
     }
 
     @Data
-    private static class createXiangMuDto {
+    public static class createXiangMuDto {
         @NotEmpty
         String mingCheng;
 
@@ -230,7 +230,7 @@ public class MainController {
     }
 
     @Data
-    private static class AddXiangMuJiFeiBiaoZhunDto {
+    public static class AddXiangMuJiFeiBiaoZhunDto {
         @NotNull
         Long xiangMuId;
 
@@ -256,7 +256,7 @@ public class MainController {
     }
 
     @Data
-    private static class RemoveXiangMuJiFeiBiaoZhun {
+    public static class RemoveXiangMuJiFeiBiaoZhun {
         @NotNull
         Long xiangMuId;
 
@@ -279,7 +279,7 @@ public class MainController {
     }
 
     @Data
-    private static class AddXiangMuChengYuan {
+    public static class AddXiangMuChengYuan {
         @NotNull
         Long xiangMuId;
 
@@ -299,7 +299,7 @@ public class MainController {
     }
 
     @Data
-    private static class RemoveXiangMuChengYuan {
+    public static class RemoveXiangMuChengYuan {
         @NotNull
         Long xiangMuId;
 
@@ -325,14 +325,14 @@ public class MainController {
     }
 
     @Data
-    private static class ImportYongHuGongZuoJiLuDto {
+    public static class ImportYongHuGongZuoJiLuDto {
         @NotEmpty
         @Valid
         List<YongHuGongZuoJiLuDto> data;
     }
 
     @Data
-    private static class YongHuGongZuoJiLuDto {
+    public static class YongHuGongZuoJiLuDto {
         @NotEmpty
         String yongHuMing;
 
@@ -372,7 +372,7 @@ public class MainController {
     }
 
     @Data
-    private static class CreateZhiFuDto {
+    public static class CreateZhiFuDto {
         @NotEmpty
         String gongSiMingCheng;
 
@@ -420,7 +420,7 @@ public class MainController {
     }
 
     @Data
-    private static class GenerateBaoGaoDto {
+    public static class GenerateBaoGaoDto {
         @NotNull
         Long gongSiId;
 
@@ -446,7 +446,7 @@ public class MainController {
     }
 
     @Data
-    private static class PasswordDto {
+    public static class PasswordDto {
         @NotEmpty
         @Size(min = 4)
         String password;
@@ -472,14 +472,14 @@ public class MainController {
     }
 
     @Data
-    private static class ImportGongZuoJiLuDto {
+    public static class ImportGongZuoJiLuDto {
         @NotEmpty
         @Valid
         List<GongZuoJiLuDto> data;
     }
 
     @Data
-    private static class GongZuoJiLuDto {
+    public static class GongZuoJiLuDto {
         @NotEmpty
         String xiangMuMingCheng;
 
