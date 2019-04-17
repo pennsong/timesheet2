@@ -10,7 +10,9 @@ import com.example.timesheet.repository.YongHuRepository;
 import com.example.timesheet.service.MainService;
 import com.example.timesheet.util.PPResponse;
 import io.swagger.annotations.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +33,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(consumes = "application/json", produces = "application/json")
+//@RequestMapping(consumes = "application/json", produces = "application/json")
 @Transactional
 @Api(value = "主Controller", description = "主Controller")
 public class MainController {
@@ -109,6 +111,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class YongHuPasswordDto {
         @NotNull
@@ -128,6 +132,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @AllArgsConstructor
+    @NoArgsConstructor
     @Data
     public static class CreateGongSiDto {
         @NotBlank
@@ -152,6 +158,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class SetGongSiMingChengDto {
         @NotNull
@@ -170,6 +178,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class SetGongSiJieSuanRiDto {
         @NotNull
@@ -188,6 +198,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class createXiangMuDto {
         @NotBlank
@@ -215,6 +227,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class AddXiangMuJiFeiBiaoZhunDto {
         @NotNull
@@ -239,6 +253,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class RemoveXiangMuJiFeiBiaoZhun {
         @NotNull
@@ -260,6 +276,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class AddXiangMuChengYuan {
         @NotNull
@@ -278,6 +296,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class RemoveXiangMuChengYuan {
         @NotNull
@@ -302,6 +322,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class ImportYongHuGongZuoJiLuDto {
         @NotEmpty
@@ -309,6 +331,8 @@ public class MainController {
         List<YongHuGongZuoJiLuDto> data;
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class YongHuGongZuoJiLuDto {
         @NotBlank
@@ -345,6 +369,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class CreateZhiFuDto {
         @NotBlank
@@ -387,6 +413,8 @@ public class MainController {
         return PPResponse.response(report);
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class GenerateBaoGaoDto {
         @NotNull
@@ -413,6 +441,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class PasswordDto {
         @NotBlank
@@ -439,6 +469,8 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class ImportGongZuoJiLuDto {
         @NotEmpty

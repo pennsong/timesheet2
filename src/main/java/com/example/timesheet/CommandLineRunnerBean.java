@@ -48,49 +48,44 @@ public class CommandLineRunnerBean implements CommandLineRunner {
     @Autowired
     private GongZuoJiLuRepository gongZuoJiLuRepository;
 
-
     @Override
     public void run(String... args) {
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
-            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1"), new BigDecimal(500), Arrays.asList("ADMIN"));
+            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal(500), Arrays.asList("ADMIN"));
             yongHuRepository.save(yongHu1);
         }
 
-        /*user
-        u1 2 0
-        u2 2 1
-        u3 2 1
+        /*
+        用户
+        y1 2
+        y2 2
+        y3 2
         */
-        YongHu u1 = mainService.createYongHu("u1", "1234", new BigDecimal(500));
-        YongHu u2 = mainService.createYongHu("u2", "1234", new BigDecimal(500));
-        YongHu u3 = mainService.createYongHu("u3", "1234", new BigDecimal(500));
+        YongHu y1 = mainService.createYongHu("y1", "1234", new BigDecimal(2));
+        YongHu y2 = mainService.createYongHu("y2", "1234", new BigDecimal(2));
+        YongHu y3 = mainService.createYongHu("y3", "1234", new BigDecimal(2));
 
-       /* company
-       c1
-       c2
-       c3
-       c4
-       c5
-       c6
+       /*
+       公司
+       g1
+       g2
+       g3
        */
-        GongSi c1 = mainService.createGongSi("c1");
-        GongSi c2 = mainService.createGongSi("c2");
-        GongSi c3 = mainService.createGongSi("c3");
-        GongSi c4 = mainService.createGongSi("c4");
-        GongSi c5 = mainService.createGongSi("c5");
-        GongSi c6 = mainService.createGongSi("c6");
+        GongSi g1 = mainService.createGongSi("g1");
+        GongSi g2 = mainService.createGongSi("g2");
+        GongSi g3 = mainService.createGongSi("g3");
 
         /*
-        project
-        c1p1 c1 worker(u1, u2)
+        项目
+        g1x1 g1
         [
             {
-                u1,
+                y1,
                 xiaoShiFeiYong: [
                     {
-                        1999/12/31,
+                        2000/1/1,
                         2
                     },
                     {
@@ -98,122 +93,92 @@ public class CommandLineRunnerBean implements CommandLineRunner {
                         4
                     },
                     {
-                        2000/1/20,
+                        2000/1/10,
                         6
-                    },
-                    {
-                        2099/1/1,
-                        8
-                    },
-                ],
-                hourCommission: [
-                    {
-                        1999/12/31,
-                        1
-                    },
-                    {
-                        2000/1/5,
-                        2
-                    },
-                    {
-                        2000/1/20,
-                        3
-                    },
-                    {
-                        2099/1/1,
-                        4
-                    },
-                ],
+                    }
+                ]
             },
             {
-                u2,
+                y2,
                 xiaoShiFeiYong: [
-                    {
-                        1999/12/31,
+                     {
+                        2000/1/1,
                         2
-                    }
-                ],
-                hourCommission: [
+                    },
                     {
-                        1999/12/31,
-                        1
+                        2000/1/5,
+                        4
+                    },
+                    {
+                        2000/1/10,
+                        6
                     }
                 ]
             }
         ]
-        c1p2 c1
-        c2p1 c2
-        c5p1 c5 worker(u1)
-        c6p1 c6 worker(u1)
+        g1x2 g1
         [
             {
-                u1,
+                y1,
                 xiaoShiFeiYong: [
                     {
-                        1999/12/31,
+                        2000/1/1,
                         2
-                    }
-                ],
-                hourCommission: [
-                    {
-                        1999/12/31,
-                        1
                     }
                 ]
             }
         ]
+        g2x1 g2
         */
-        XiangMu c1p1 = mainService.createXiangMu("c1p1", c1.getId());
-        XiangMu c1p2 = mainService.createXiangMu("c1p2", c1.getId());
-        XiangMu c2p1 = mainService.createXiangMu("c2p1", c2.getId());
-        XiangMu c5p1 = mainService.createXiangMu("c5p1", c5.getId());
-        XiangMu c6p1 = mainService.createXiangMu("c6p1", c6.getId());
+        XiangMu g1x1 = mainService.createXiangMu("g1x1", g1.getId());
+        XiangMu g1x2 = mainService.createXiangMu("g1x2", g1.getId());
+        XiangMu g2x1 = mainService.createXiangMu("g2x1", g2.getId());
 
-        mainService.addXiangMuChengYuan(c5p1.getId(), u1.getId());
-        mainService.addXiangMuChengYuan(c6p1.getId(), u1.getId());
+        mainService.addXiangMuChengYuan(g1x1.getId(), y1.getId());
+        mainService.addXiangMuChengYuan(g1x1.getId(), y2.getId());
 
-        mainService.addXiangMuJiFeiBiaoZhun(c1p1.getId(), u1.getId(), LocalDate.of(1999, 12, 31), new BigDecimal(2));
-        mainService.addXiangMuJiFeiBiaoZhun(c1p1.getId(), u1.getId(), LocalDate.of(2000, 1, 5), new BigDecimal(4));
-        mainService.addXiangMuJiFeiBiaoZhun(c1p1.getId(), u1.getId(), LocalDate.of(2000, 1, 20), new BigDecimal(6));
-        mainService.addXiangMuJiFeiBiaoZhun(c1p1.getId(), u1.getId(), LocalDate.of(2099, 1, 1), new BigDecimal(8));
-        mainService.addXiangMuJiFeiBiaoZhun(c1p1.getId(), u1.getId(), LocalDate.of(1999, 12, 31), new BigDecimal(2));
-        mainService.addXiangMuJiFeiBiaoZhun(c1p1.getId(), u1.getId(), LocalDate.of(1999, 12, 31), new BigDecimal(2));
+        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal(2));
+        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 5), new BigDecimal(4));
+        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 10), new BigDecimal(6));
+        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 1), new BigDecimal(2));
+        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 5), new BigDecimal(4));
+        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 10), new BigDecimal(6));
+
+        mainService.addXiangMuChengYuan(g1x2.getId(), y1.getId());
+
+        mainService.addXiangMuJiFeiBiaoZhun(g1x2.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal(2));
 
         /*
-        payment
-        1999/12/1 c1 100.0 testNote
-        2000/1/5 c1 100.0 testNote
-        2000/1/15 c1 100.0 testNote
-        2000/1/15 c4 100.0 testNote
+        支付
+        2000/1/1 g1 100.0 testNote
+        2000/1/5 g1 100.0 testNote
         */
-        mainService.createZhiFu(c1.getMingCheng(), LocalDate.of(1999, 12, 1), new BigDecimal(100), "testNote");
-        mainService.createZhiFu(c1.getMingCheng(), LocalDate.of(2000, 1, 5), new BigDecimal(100), "testNote");
-        mainService.createZhiFu(c1.getMingCheng(), LocalDate.of(2000, 1, 15), new BigDecimal(100), "testNote");
-        mainService.createZhiFu(c4.getMingCheng(), LocalDate.of(2000, 1, 15), new BigDecimal(100), "testNote");
+        mainService.createZhiFu(g1.getMingCheng(), LocalDate.of(2000, 1, 1), new BigDecimal(100), "testNote");
+        mainService.createZhiFu(g1.getMingCheng(), LocalDate.of(2000, 1, 5), new BigDecimal(100), "testNote");
 
         /*
         workRecord
-        c1p1 u1 2000/1/1 10:01 11:01 testWorkNote
-        c1p1 u1 2000/1/5 10:01 11:01 testWorkNote
-        c1p1 u1 2000/1/6 10:01 11:01 testWorkNote
+        g1x1 y1 2000/1/1 10:01 11:01 testWorkNote
+        g1x1 y1 2000/1/5 10:01 11:01 testWorkNote
+        g1x1 y1 2000/1/6 10:01 11:01 testWorkNote
         */
         mainService.createGongZuoJiLu(
-                u1.getYongHuMing(),
-                c1p1.getMingCheng(),
+                y1.getYongHuMing(),
+                g1x1.getMingCheng(),
                 LocalDateTime.of(2000, 1, 1, 10, 1),
                 LocalDateTime.of(2000, 1, 1, 11, 1),
                 "testWorkNote"
         );
         mainService.createGongZuoJiLu(
-                u1.getYongHuMing(),
-                c1p1.getMingCheng(),
+                y1.getYongHuMing(),
+                g1x1.getMingCheng(),
                 LocalDateTime.of(2000, 1, 5, 10, 1),
                 LocalDateTime.of(2000, 1, 5, 11, 1),
                 "testWorkNote"
         );
         mainService.createGongZuoJiLu(
-                u1.getYongHuMing(),
-                c1p1.getMingCheng(),
+                y1.getYongHuMing(),
+                g1x1.getMingCheng(),
                 LocalDateTime.of(2000, 1, 6, 10, 1),
                 LocalDateTime.of(2000, 1, 6, 11, 1),
                 "testWorkNote"
