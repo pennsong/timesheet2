@@ -11,10 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,7 +33,7 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
     /**
      * 名称
      */
-    @NotEmpty
+    @NotBlank
     @Size(min = 2)
     @Column(unique = true)
     private String yongHuMing;
@@ -44,7 +41,7 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
     /**
      * 加密后的密码
      */
-    @NotEmpty
+    @NotBlank
     @Setter
     private String jiaMiMiMa;
 
@@ -52,7 +49,7 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
      * 小时费用
      */
     @NotNull
-    @Positive
+    @DecimalMin(value = "0", inclusive = false)
     @Setter
     private BigDecimal xiaoShiFeiYong;
 

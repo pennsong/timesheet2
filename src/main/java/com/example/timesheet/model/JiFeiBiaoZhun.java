@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
@@ -36,7 +37,7 @@ public class JiFeiBiaoZhun {
      * 小时费用
      */
     @NotNull
-    @Positive
+    @DecimalMin(value = "0", inclusive = false)
     private BigDecimal xiaoShiFeiYong;
 
     @Override

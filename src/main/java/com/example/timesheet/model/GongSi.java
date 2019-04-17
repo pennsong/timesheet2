@@ -11,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,7 +31,7 @@ public class GongSi extends PPEntityTypeValidatableAbstract {
     /**
      * 名称
      */
-    @NotEmpty
+    @NotBlank
     @Column(unique = true)
     @Setter
     private String mingCheng;

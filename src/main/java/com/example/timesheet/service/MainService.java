@@ -61,10 +61,10 @@ public class MainService {
      *
      * @param yongHuMing 用户名
      * @param password   密码
-     * @param hourCost   小时费用
+     * @param xiaoShiFeiYong   小时费用
      */
-    public YongHu createYongHu(String yongHuMing, String password, BigDecimal hourCost) {
-        YongHu yongHu = new YongHu(null, yongHuMing, passwordEncoder.encode(password), hourCost, Arrays.asList("USER"));
+    public YongHu createYongHu(String yongHuMing, String password, BigDecimal xiaoShiFeiYong) {
+        YongHu yongHu = new YongHu(null, yongHuMing, passwordEncoder.encode(password), xiaoShiFeiYong, Arrays.asList("USER"));
 
         return yongHuRepository.save(yongHu);
     }
@@ -404,8 +404,8 @@ public class MainService {
                 throw new PPBusinessException(gongZuoJiLu.toString() + ": 没有找到计费标准!");
             }
 
-            BigDecimal hourCost = optionalJiFeiBiaoZhun.get().getXiaoShiFeiYong();
-            BigDecimal secondCost = hourCost.divide(new BigDecimal(3600), MathContext.DECIMAL128);
+            BigDecimal xiaoShiFeiYong = optionalJiFeiBiaoZhun.get().getXiaoShiFeiYong();
+            BigDecimal secondCost = xiaoShiFeiYong.divide(new BigDecimal(3600), MathContext.DECIMAL128);
 
             Duration duration = Duration.between(gongZuoJiLu.getKaiShi(), gongZuoJiLu.getJieShu());
             BigDecimal cost = secondCost.multiply(new BigDecimal(duration.getSeconds()));

@@ -88,7 +88,7 @@ public class CommandLineRunnerBean implements CommandLineRunner {
         [
             {
                 u1,
-                hourCost: [
+                xiaoShiFeiYong: [
                     {
                         1999/12/31,
                         2
@@ -127,7 +127,7 @@ public class CommandLineRunnerBean implements CommandLineRunner {
             },
             {
                 u2,
-                hourCost: [
+                xiaoShiFeiYong: [
                     {
                         1999/12/31,
                         2
@@ -148,7 +148,7 @@ public class CommandLineRunnerBean implements CommandLineRunner {
         [
             {
                 u1,
-                hourCost: [
+                xiaoShiFeiYong: [
                     {
                         1999/12/31,
                         2

@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,7 +32,7 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
     /**
      * 名称
      */
-    @NotEmpty
+    @NotBlank
     @Column(unique = true)
     @Setter
     private String mingCheng;

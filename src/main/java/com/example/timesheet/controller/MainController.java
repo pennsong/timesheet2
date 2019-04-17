@@ -9,19 +9,20 @@ import com.example.timesheet.repository.XiangMuRepository;
 import com.example.timesheet.repository.YongHuRepository;
 import com.example.timesheet.service.MainService;
 import com.example.timesheet.util.PPResponse;
+import io.swagger.annotations.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
@@ -32,6 +33,7 @@ import java.util.List;
 @RestController
 @RequestMapping(consumes = "application/json", produces = "application/json")
 @Transactional
+@Api(value = "主Controller", description = "主Controller")
 public class MainController {
     @Autowired
     MainService mainService;
@@ -61,35 +63,35 @@ public class MainController {
 
     // -Admin
 
-    /**
-     * 新建用户
-     */
+    @ApiOperation(value = "新建用户", tags = {"Admin", "用户"})
     @RequestMapping(value = "/admin/createYongHu", method = RequestMethod.POST)
     @DtoValid
     public String createYongHu(@RequestBody CreateYongHuDto dto) {
-        mainService.createYongHu(dto.yongHuMing, dto.password, dto.hourCost);
+        mainService.createYongHu(dto.yongHuMing, dto.password, dto.xiaoShiFeiYong);
 
         return PPResponse.response("ok");
     }
 
+    @ApiModel(description = "创建用户Dto")
     @Data
     public static class CreateYongHuDto {
-        @NotEmpty
+        @ApiModelProperty(notes = "用户名", required = true, position = 1)
+        @NotBlank
         @Size(min = 2)
         String yongHuMing;
 
-        @NotEmpty
+        @ApiModelProperty(notes = "密码", required = true, position = 2)
+        @NotNull
         @Size(min = 4)
         String password;
 
+        @ApiModelProperty(notes = "小时费用", required = true, position = 3)
         @NotNull
-        @Positive
-        BigDecimal hourCost;
+        @DecimalMin(value = "0", inclusive = false)
+        BigDecimal xiaoShiFeiYong;
     }
 
-    /**
-     * 删除用户
-     */
+    @ApiOperation(value = "删除用户", tags = {"Admin", "用户"})
     @RequestMapping(value = "/admin/deleteYongHu/{id}", method = RequestMethod.DELETE)
     @DtoValid
     public String deleteYongHu(@PathVariable Long id) {
@@ -98,9 +100,7 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
-    /**
-     * 设置指定用户密码
-     */
+    @ApiOperation(value = "设置指定用户密码", tags = {"Admin", "用户"})
     @RequestMapping(value = "/admin/setYongHuPassword", method = RequestMethod.POST)
     @DtoValid
     public String setYongHuPassword(@RequestBody YongHuPasswordDto dto) {
@@ -114,14 +114,12 @@ public class MainController {
         @NotNull
         Long yongHuId;
 
-        @NotEmpty
+        @NotBlank
         @Size(min = 4)
         String password;
     }
 
-    /**
-     * 新建公司
-     */
+    @ApiOperation(value = "新建公司", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/createGongSi", method = RequestMethod.POST)
     @DtoValid
     public String createGongSi(@RequestBody CreateGongSiDto dto) {
@@ -132,13 +130,11 @@ public class MainController {
 
     @Data
     public static class CreateGongSiDto {
-        @NotEmpty
+        @NotBlank
         String mingCheng;
     }
 
-    /**
-     * 删除用户
-     */
+    @ApiOperation(value = "删除公司", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/deleteGongSi/{id}", method = RequestMethod.DELETE)
     @DtoValid
     public String deleteGongSi(@PathVariable Long id) {
@@ -147,9 +143,7 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
-    /**
-     * 设置公司名称
-     */
+    @ApiOperation(value = "设置公司名称", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/setGongSiMingCheng", method = RequestMethod.POST)
     @DtoValid
     public String setGongSiMingCheng(@RequestBody SetGongSiMingChengDto dto) {
@@ -163,13 +157,11 @@ public class MainController {
         @NotNull
         Long id;
 
-        @NotEmpty
+        @NotBlank
         String mingCheng;
     }
 
-    /**
-     * 设置公司结算日
-     */
+    @ApiOperation(value = "设置公司结算日", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/setGongSiJieSuanRi", method = RequestMethod.POST)
     @DtoValid
     public String setGongSiJieSuanRi(@RequestBody SetGongSiJieSuanRiDto dto) {
@@ -187,9 +179,7 @@ public class MainController {
         LocalDate jieSuanRi;
     }
 
-    /**
-     * 新建项目
-     */
+    @ApiOperation(value = "新建项目", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/createXiangMu", method = RequestMethod.POST)
     @DtoValid
     public String createXiangMu(@RequestBody createXiangMuDto dto) {
@@ -200,16 +190,14 @@ public class MainController {
 
     @Data
     public static class createXiangMuDto {
-        @NotEmpty
+        @NotBlank
         String mingCheng;
 
         @NotNull
         Long gongSiId;
     }
 
-    /**
-     * 删除项目
-     */
+    @ApiOperation(value = "删除项目", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/deleteXiangMu/{id}", method = RequestMethod.DELETE)
     @DtoValid
     public String deleteXiangMu(@PathVariable Long id) {
@@ -218,9 +206,7 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
-    /**
-     * 添加项目计费标准
-     */
+    @ApiOperation(value = "添加项目计费标准", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/addXiangMuJiFeiBiaoZhun", method = RequestMethod.POST)
     @DtoValid
     public String addXiangMuJiFeiBiaoZhun(@RequestBody AddXiangMuJiFeiBiaoZhunDto dto) {
@@ -244,9 +230,7 @@ public class MainController {
         BigDecimal xiaoShiFeiYong;
     }
 
-    /**
-     * 移除项目计费标准
-     */
+    @ApiOperation(value = "移除项目计费标准", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/removeXiangMuJiFeiBiaoZhun", method = RequestMethod.POST)
     @DtoValid
     public String removeXiangMuJiFeiBiaoZhun(@RequestBody RemoveXiangMuJiFeiBiaoZhun dto) {
@@ -267,9 +251,7 @@ public class MainController {
         LocalDate kaiShi;
     }
 
-    /**
-     * 添加项目成员
-     */
+    @ApiOperation(value = "添加项目成员", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/addXiangMuChengYuan", method = RequestMethod.POST)
     @DtoValid
     public String addXiangMuChengYuan(@RequestBody AddXiangMuChengYuan dto) {
@@ -287,9 +269,7 @@ public class MainController {
         Long yongHuId;
     }
 
-    /**
-     * 移除项目成员
-     */
+    @ApiOperation(value = "移除项目成员", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/removeXiangMuChengYuan", method = RequestMethod.POST)
     @DtoValid
     public String removeXiangMuChengYuan(@RequestBody RemoveXiangMuChengYuan dto) {
@@ -307,9 +287,7 @@ public class MainController {
         Long yongHuId;
     }
 
-    /**
-     * 导入用户工作记录
-     */
+    @ApiOperation(value = "导入用户工作记录", tags = {"Admin", "工作记录"})
     @RequestMapping(value = "/admin/importYongHuGongZuoJiLu", method = RequestMethod.POST)
     @DtoValid
     public String importYongHuGongZuoJiLu(@RequestBody ImportYongHuGongZuoJiLuDto dto) {
@@ -333,10 +311,10 @@ public class MainController {
 
     @Data
     public static class YongHuGongZuoJiLuDto {
-        @NotEmpty
+        @NotBlank
         String yongHuMing;
 
-        @NotEmpty
+        @NotBlank
         String xiangMuMingCheng;
 
         @NotNull
@@ -345,13 +323,11 @@ public class MainController {
         @NotNull
         LocalDateTime jieShu;
 
-        @NotEmpty
+        @NotBlank
         String beiZhu;
     }
 
-    /**
-     * 删除工作记录
-     */
+    @ApiOperation(value = "删除工作记录", tags = {"Admin", "工作记录"})
     @RequestMapping(value = "/admin/deleteYongHuGongZuoJiLu/{id}", method = RequestMethod.DELETE)
     @DtoValid
     public String deleteYongHuGongZuoJiLu(@PathVariable Long id) {
@@ -360,9 +336,7 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
-    /**
-     * 新建支付
-     */
+    @ApiOperation(value = "新建支付", tags = {"Admin", "支付"})
     @RequestMapping(value = "/admin/createZhiFu", method = RequestMethod.POST)
     @DtoValid
     public String createZhiFu(@RequestBody CreateZhiFuDto dto) {
@@ -373,7 +347,7 @@ public class MainController {
 
     @Data
     public static class CreateZhiFuDto {
-        @NotEmpty
+        @NotBlank
         String gongSiMingCheng;
 
         @NotNull
@@ -385,9 +359,7 @@ public class MainController {
         String beiZhu;
     }
 
-    /**
-     * 删除支付
-     */
+    @ApiOperation(value = "删除支付", tags = {"Admin", "支付"})
     @RequestMapping(value = "/admin/deleteZhiFu/{id}", method = RequestMethod.DELETE)
     @DtoValid
     public String deleteZhiFu(@PathVariable Long id) {
@@ -396,11 +368,7 @@ public class MainController {
         return PPResponse.response("ok");
     }
 
-    /**
-     * 生成报告
-     * <p>
-     * 1) 成功生成报告后, 把对应公司的结算日设置为报告结束日期
-     */
+    @ApiOperation(value = "生成报告", notes = "成功生成报告后, 把对应公司的结算日设置为报告结束日期", tags = {"Admin", "报告"})
     @RequestMapping(value = "/admin/generateBaoGao", method = RequestMethod.POST)
     @DtoValid
     public String generateBaoGao(@RequestBody GenerateBaoGaoDto dto) {
@@ -447,7 +415,7 @@ public class MainController {
 
     @Data
     public static class PasswordDto {
-        @NotEmpty
+        @NotBlank
         @Size(min = 4)
         String password;
     }
@@ -480,7 +448,7 @@ public class MainController {
 
     @Data
     public static class GongZuoJiLuDto {
-        @NotEmpty
+        @NotBlank
         String xiangMuMingCheng;
 
         @NotNull
@@ -489,7 +457,7 @@ public class MainController {
         @NotNull
         LocalDateTime jieShu;
 
-        @NotEmpty
+        @NotBlank
         String beiZhu;
     }
 
