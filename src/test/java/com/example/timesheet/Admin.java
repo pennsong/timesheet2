@@ -13,11 +13,16 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.xml.transform.OutputKeys;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Slf4j
@@ -350,6 +355,168 @@ public class Admin extends TimesheetApplicationTests {
 
     @Test
     public void 删除项目_失败_有工作记录() {
+        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+
+        HttpEntity<String> request = new HttpEntity<>(
+                headers
+        );
+
+        ResponseEntity<String> response = restTemplate.exchange("/admin/deleteXiangMu/" + xiangMu.getId(), HttpMethod.DELETE, request, String.class);
+        checkCode(response, PPReferencedExceptionCode);
+
+        // 清空当前repository以从数据库获取最新数据
+        entityManager.clear();
+
+        xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+        Assert.assertNotNull(xiangMu);
+    }
+
+    @Test
+    public void 添加项目计费标准_成功_公司还未有结算日_新建计费标准() {
+        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing("u1");
+
+        int count = xiangMu.getJiFeiBiaoZhuns().size();
+
+        PPJson ppJson = new PPJson();
+        ppJson.put("xiangMuId", xiangMu.getId());
+        ppJson.put("yongHuId", yongHu.getId());
+        ppJson.put("kaiShi", "2000-02-01");
+        ppJson.put("xiaoShiFeiYong", "501");
+
+        HttpEntity<String> request = new HttpEntity<>(
+                ppJson.toString(),
+                headers
+        );
+
+        ResponseEntity<String> response = restTemplate.exchange("/admin/addXiangMuJiFeiBiaoZhun", HttpMethod.POST, request, String.class);
+        checkCode(response, PPReferencedExceptionCode);
+
+        // 清空当前repository以从数据库获取最新数据
+        entityManager.clear();
+
+        xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+        Boolean result = xiangMu.getJiFeiBiaoZhuns()
+                .stream()
+                .anyMatch(
+                        item ->
+                                item.getKaiShi().isEqual(LocalDate.of(2000, 2, 1))
+                                        &&
+                                        item.getXiaoShiFeiYong().equals(new BigDecimal(501))
+                );
+
+        int newCount = xiangMu.getJiFeiBiaoZhuns().size();
+
+        Assert.assertTrue(result);
+        Assert.assertEquals(count + 1, newCount);
+    }
+
+    @Test
+    public void 添加项目计费标准_成功_公司还未有结算日_修改已有计费标准() {
+        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing("u1");
+
+        int count = xiangMu.getJiFeiBiaoZhuns().size();
+
+        PPJson ppJson = new PPJson();
+        ppJson.put("xiangMuId", xiangMu.getId());
+        ppJson.put("yongHuId", yongHu.getId());
+        ppJson.put("kaiShi", "2000-01-10");
+        ppJson.put("xiaoShiFeiYong", "501");
+
+        HttpEntity<String> request = new HttpEntity<>(
+                ppJson.toString(),
+                headers
+        );
+
+        ResponseEntity<String> response = restTemplate.exchange("/admin/addXiangMuJiFeiBiaoZhun", HttpMethod.POST, request, String.class);
+        checkCode(response, PPReferencedExceptionCode);
+
+        // 清空当前repository以从数据库获取最新数据
+        entityManager.clear();
+
+        xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+        Boolean result = xiangMu.getJiFeiBiaoZhuns()
+                .stream()
+                .anyMatch(
+                        item ->
+                                item.getKaiShi().isEqual(LocalDate.of(2000, 2, 1))
+                                        &&
+                                        item.getXiaoShiFeiYong().equals(new BigDecimal(501))
+                );
+
+        int newCount = xiangMu.getJiFeiBiaoZhuns().size();
+
+        Assert.assertTrue(result);
+        Assert.assertEquals(count, newCount);
+    }
+
+    @Test
+    public void 添加项目计费标准_成功_在公司结算日之后() {
+        // -设置公司结算日
+        GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
+        gongSi.setJieSuanRi(LocalDate.of(2000, 1, 1));
+        gongSiRepository.save(gongSi);
+        // -
+
+        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+        int count = xiangMu.getJiFeiBiaoZhuns().size();
+
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
+
+        PPJson ppJson = new PPJson();
+        ppJson.put("xiangMuId", xiangMu.getId());
+        ppJson.put("yongHuId", yongHu.getId());
+        ppJson.put("kaiShi", "2000-02-01");
+        ppJson.put("xiaoShiFeiYong", "501");
+
+        HttpEntity<String> request = new HttpEntity<>(
+                ppJson.toString(),
+                headers
+        );
+
+        ResponseEntity<String> response = restTemplate.exchange("/admin/addXiangMuJiFeiBiaoZhun", HttpMethod.POST, request, String.class);
+        checkCode(response, PPOK);
+
+        // 清空当前repository以从数据库获取最新数据
+        entityManager.clear();
+
+        xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+        Boolean result = xiangMu.getJiFeiBiaoZhuns()
+                .stream()
+                .anyMatch(
+                        item ->
+                                item.getKaiShi().isEqual(LocalDate.of(2000, 2, 1))
+                                        &&
+                                        item.getXiaoShiFeiYong().equals(new BigDecimal(501))
+                );
+
+        int newCount = xiangMu.getJiFeiBiaoZhuns().size();
+
+        Assert.assertTrue(result);
+        Assert.assertEquals(count + 1, newCount);
+    }
+
+    @Test
+    public void 添加项目计费标准_失败_在所属公司结算日() {
+        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+
+        HttpEntity<String> request = new HttpEntity<>(
+                headers
+        );
+
+        ResponseEntity<String> response = restTemplate.exchange("/admin/deleteXiangMu/" + xiangMu.getId(), HttpMethod.DELETE, request, String.class);
+        checkCode(response, PPReferencedExceptionCode);
+
+        // 清空当前repository以从数据库获取最新数据
+        entityManager.clear();
+
+        xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
+        Assert.assertNotNull(xiangMu);
+    }
+
+    @Test
+    public void 添加项目计费标准_失败_在所属公司结算日之前() {
         XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
 
         HttpEntity<String> request = new HttpEntity<>(

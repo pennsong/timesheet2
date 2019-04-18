@@ -39,7 +39,7 @@ public class GlobalControllerExceptionHandler {
                 if (ex.getMessage().contains("constraint") && ex.getMessage().contains("UK")) {
                     jsonObject.put("code", "3000");
                     customMessage = "违反唯一约束!";
-                } else if (ex.getMessage().contains("REFERENCES") && ex.getMessage().contains("FOREIGN")) {
+                } else if (ex.getCause().getCause().getMessage().contains("a foreign key constraint fails")) {
                     jsonObject.put("code", "3500");
                     customMessage = "被引用, 不可被删除!";
                 } else {
