@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +36,7 @@ import java.util.List;
 @Slf4j
 @RestController
 //@RequestMapping(consumes = "application/json", produces = "application/json")
-@Transactional
+@Transactional(propagation = Propagation.REQUIRES_NEW)
 @Api(value = "主Controller", description = "主Controller")
 public class MainController {
     @Autowired
@@ -407,9 +408,12 @@ public class MainController {
             throw new PPValidateException(e.getMessage());
         }
 
-        // 成功生成报告后, 把对应公司的结算日设置为报告结束日期
+        // -成功生成报告后, 对应公司的结算日如小于报告结束日期, 则设置结算日为报告结束日期
         GongSi gongSi = mainService.gainEntityWithExistsChecking(GongSi.class, dto.gongSiId);
-        gongSi.setJieSuanRi(dto.jieShu);
+        if (gongSi.getJieSuanRi().isBefore(dto.jieShu)) {
+            gongSi.setJieSuanRi(dto.jieShu);
+        }
+        // -
 
         return PPResponse.response(report);
     }
