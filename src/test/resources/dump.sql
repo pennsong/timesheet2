@@ -37,7 +37,7 @@ CREATE TABLE `gong_si` (
 
 LOCK TABLES `gong_si` WRITE;
 /*!40000 ALTER TABLE `gong_si` DISABLE KEYS */;
-INSERT INTO `gong_si` VALUES (5,'2000-01-31','g1'),(6,NULL,'g2'),(7,NULL,'g3');
+INSERT INTO `gong_si` VALUES (5,NULL,'g1'),(6,NULL,'g2'),(7,NULL,'g3');
 /*!40000 ALTER TABLE `gong_si` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -69,7 +69,7 @@ CREATE TABLE `gong_zuo_ji_lu` (
 
 LOCK TABLES `gong_zuo_ji_lu` WRITE;
 /*!40000 ALTER TABLE `gong_zuo_ji_lu` DISABLE KEYS */;
-INSERT INTO `gong_zuo_ji_lu` VALUES (13,'testWorkNote','2000-01-01 11:01:00.000000','2000-01-01 10:01:00.000000',8,2),(14,'testWorkNote','2000-01-05 11:01:00.000000','2000-01-05 10:01:00.000000',8,2),(15,'testWorkNote','2000-01-06 11:01:00.000000','2000-01-06 10:01:00.000000',8,2);
+INSERT INTO `gong_zuo_ji_lu` VALUES (12,'testWorkNote','2000-01-01 11:01:00.000000','2000-01-01 10:01:00.000000',8,2);
 /*!40000 ALTER TABLE `gong_zuo_ji_lu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,7 +91,7 @@ CREATE TABLE `hibernate_sequence` (
 
 LOCK TABLES `hibernate_sequence` WRITE;
 /*!40000 ALTER TABLE `hibernate_sequence` DISABLE KEYS */;
-INSERT INTO `hibernate_sequence` VALUES (16),(16),(16),(16),(16);
+INSERT INTO `hibernate_sequence` VALUES (13),(13),(13),(13),(13);
 /*!40000 ALTER TABLE `hibernate_sequence` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -148,7 +148,7 @@ CREATE TABLE `xiang_mu_ji_fei_biao_zhuns` (
 
 LOCK TABLES `xiang_mu_ji_fei_biao_zhuns` WRITE;
 /*!40000 ALTER TABLE `xiang_mu_ji_fei_biao_zhuns` DISABLE KEYS */;
-INSERT INTO `xiang_mu_ji_fei_biao_zhuns` VALUES (8,'1900-01-01',2.00,2),(8,'1900-01-01',2.00,3),(8,'2000-01-01',2.00,2),(8,'2000-01-05',4.00,2),(8,'2000-01-10',6.00,2),(8,'2000-01-01',2.00,3),(8,'2000-01-05',4.00,3),(8,'2000-01-10',6.00,3),(9,'1900-01-01',2.00,2),(9,'2000-01-01',2.00,2);
+INSERT INTO `xiang_mu_ji_fei_biao_zhuns` VALUES (8,'1900-01-01',2.00,2),(8,'2000-01-01',4.00,2),(8,'1900-01-01',2.00,3),(8,'2000-01-01',4.00,3);
 /*!40000 ALTER TABLE `xiang_mu_ji_fei_biao_zhuns` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -175,7 +175,7 @@ CREATE TABLE `yong_hu` (
 
 LOCK TABLES `yong_hu` WRITE;
 /*!40000 ALTER TABLE `yong_hu` DISABLE KEYS */;
-INSERT INTO `yong_hu` VALUES (1,'$2a$10$HT9MvBgQp3LEkgFM7d3aLeNM1G.bczZNw8AXJ346pcs2pYc.kfySG',500.00,'Admin'),(2,'$2a$10$/LAzADFmM/FE2mBWe1LsWuptP4eFN8LMugWZajIiITD9JCvczxujm',2.00,'y1'),(3,'$2a$10$rqm3cR.1qm0vO3XHK/SzcuOsiTEeUg6ASl/kSE2yt5mZ4BH9PZPQi',2.00,'y2'),(4,'$2a$10$x15CXEe/wI58LhWH2yg0H.bZaAT6VuAk8gfS7/jEvXGs2fANnidqi',2.00,'y3');
+INSERT INTO `yong_hu` VALUES (1,'$2a$10$k/wpqr2SOfflV/m.oShep.WTBYJS0H.GcLsBg3g4.wExgsMtG/5Ee',500.00,'Admin'),(2,'$2a$10$iSOB541DCcA//OsptqfP..bk3jsgDpLpeeyMgfuGVZaLOlch0SEpC',2.00,'y1'),(3,'$2a$10$sgi4QnrTMAJ0L.TN9nNEJOSPgieq6vVfGk0JOG5BSHgRjVVfXcaie',2.00,'y2'),(4,'$2a$10$6AS/7JnuyYdzhbMYFNRAi.t868ID.HNRxGiti.l/KTsV.t/zAtZqm',2.00,'y3');
 /*!40000 ALTER TABLE `yong_hu` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -229,7 +229,7 @@ CREATE TABLE `zhi_fu` (
 
 LOCK TABLES `zhi_fu` WRITE;
 /*!40000 ALTER TABLE `zhi_fu` DISABLE KEYS */;
-INSERT INTO `zhi_fu` VALUES (11,'testNote',100.00,'2000-01-01',5),(12,'testNote',100.00,'2000-01-05',5);
+INSERT INTO `zhi_fu` VALUES (11,'testNote',100.00,'2000-01-01',5);
 /*!40000 ALTER TABLE `zhi_fu` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -242,4 +242,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-04-18 23:29:47
+-- Dump completed on 2019-04-19 16:28:46

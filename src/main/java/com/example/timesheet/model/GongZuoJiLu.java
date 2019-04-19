@@ -1,10 +1,15 @@
 package com.example.timesheet.model;
 
 import com.example.timesheet.validator.PPEntityTypeValidatableAbstract;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -42,13 +47,23 @@ public class GongZuoJiLu extends PPEntityTypeValidatableAbstract {
      * 工作人员
      */
     @ManyToOne(optional = false)
+    @JsonIgnore
     private YongHu yongHu;
+
+    public String getYongHu_yongHuMing() {
+        return yongHu.getYongHuMing();
+    }
 
     /**
      * 工作项目
      */
     @ManyToOne(optional = false)
+    @JsonIgnore
     private XiangMu xiangMu;
+
+    public String getXiangMu_mingCheng() {
+        return xiangMu.getMingCheng();
+    }
 
     /**
      * 工作内容

@@ -2,6 +2,7 @@ package com.example.timesheet.model;
 
 import com.example.timesheet.util.PPUtil;
 import com.example.timesheet.validator.PPEntityTypeValidatableAbstract;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,6 +44,7 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
      */
     @NotBlank
     @Setter
+    @JsonIgnore
     private String jiaMiMiMa;
 
     /**
@@ -72,6 +74,7 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
     }
 
     @Override
+    @JsonIgnore
     public String getPassword() {
         return jiaMiMiMa;
     }

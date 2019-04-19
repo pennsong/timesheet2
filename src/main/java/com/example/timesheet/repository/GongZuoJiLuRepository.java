@@ -2,15 +2,17 @@ package com.example.timesheet.repository;
 
 import com.example.timesheet.model.GongSi;
 import com.example.timesheet.model.GongZuoJiLu;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface GongZuoJiLuRepository extends CrudRepository<GongZuoJiLu, Long> {
+public interface GongZuoJiLuRepository extends PagingAndSortingRepository<GongZuoJiLu, Long> {
     /**
      * 指定用户是否有在指定项目上的工作记录
      *
@@ -59,4 +61,21 @@ public interface GongZuoJiLuRepository extends CrudRepository<GongZuoJiLu, Long>
             "and g.kaiShi < :jieShu " +
             "order by g.xiangMu, g.kaiShi")
     List<GongZuoJiLu> findGongSiGongZuoJiLu(@Param("gongSiId") Long gongSiId, @Param("kaiShi") LocalDateTime kaiShi, @Param("jieShu") LocalDateTime jieShu);
+
+    /**
+     * 指定人员的指定时间段工作记录
+     *
+     * @param yongHuId 用户id
+     * @param kaiShi 开始日期时间 大于等于
+     * @param jieShu 结束日期时间 小于
+     */
+    @Query("select " +
+            "g " +
+            "from GongZuoJiLu g " +
+            "join g.yongHu y " +
+            "where y.id = :yongHuId " +
+            "and g.kaiShi >= :kaiShi " +
+            "and g.kaiShi < :jieShu " +
+            "order by g.xiangMu, g.kaiShi")
+    List<GongZuoJiLu> findYongHuGongZuoJiLu(@Param("yongHuId") Long yongHuId, @Param("kaiShi") LocalDateTime kaiShi, @Param("jieShu") LocalDateTime jieShu, Pageable pageable);
 }

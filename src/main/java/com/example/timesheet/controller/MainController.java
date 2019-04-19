@@ -8,7 +8,7 @@ import com.example.timesheet.repository.GongSiRepository;
 import com.example.timesheet.repository.XiangMuRepository;
 import com.example.timesheet.repository.YongHuRepository;
 import com.example.timesheet.service.MainService;
-import com.example.timesheet.util.PPResponse;
+import com.example.timesheet.service.PPResponse;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,22 +16,20 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.core.Authentication;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.security.Principal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
+
+import static com.example.timesheet.util.PPUtil.MAX_DATE;
+import static com.example.timesheet.util.PPUtil.MIN_DATE;
 
 @Slf4j
 @RestController
@@ -39,8 +37,12 @@ import java.util.List;
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 @Api(value = "主Controller", description = "主Controller")
 public class MainController {
+
     @Autowired
-    MainService mainService;
+    private PPResponse ppResponse;
+
+    @Autowired
+    private MainService mainService;
 
     @Autowired
     private GongSiRepository gongSiRepository;
@@ -58,11 +60,9 @@ public class MainController {
     }
 
     @RequestMapping("/test")
-    public String test(Principal principal) {
+    public Iterable<YongHu> test(Principal principal) {
 
-        log.info(principal.toString());
-
-        return "homepage";
+        return yongHuRepository.findAll();
     }
 
     // -Admin
@@ -71,9 +71,9 @@ public class MainController {
     @RequestMapping(value = "/admin/createYongHu", method = RequestMethod.POST)
     @DtoValid
     public String createYongHu(@RequestBody CreateYongHuDto dto) {
-        mainService.createYongHu(dto.yongHuMing, dto.password, dto.xiaoShiFeiYong);
+        YongHu yongHu = mainService.createYongHu(dto.yongHuMing, dto.password, dto.xiaoShiFeiYong);
 
-        return PPResponse.response("ok");
+        return ppResponse.response(yongHu);
     }
 
     @ApiModel(description = "创建用户Dto")
@@ -101,7 +101,7 @@ public class MainController {
     public String deleteYongHu(@PathVariable Long id) {
         mainService.deleteYongHu(id);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @ApiOperation(value = "设置指定用户密码", tags = {"Admin", "用户"})
@@ -110,7 +110,7 @@ public class MainController {
     public String setYongHuPassword(@RequestBody YongHuPasswordDto dto) {
         mainService.changePassword(dto.yongHuId, dto.password);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -129,9 +129,9 @@ public class MainController {
     @RequestMapping(value = "/admin/createGongSi", method = RequestMethod.POST)
     @DtoValid
     public String createGongSi(@RequestBody CreateGongSiDto dto) {
-        mainService.createGongSi(dto.mingCheng);
+        GongSi gongSi = mainService.createGongSi(dto.mingCheng);
 
-        return PPResponse.response("ok");
+        return ppResponse.response(gongSi);
     }
 
     @AllArgsConstructor
@@ -148,7 +148,7 @@ public class MainController {
     public String deleteGongSi(@PathVariable Long id) {
         mainService.deleteGongSi(id);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @ApiOperation(value = "设置公司名称", tags = {"Admin", "公司"})
@@ -157,7 +157,7 @@ public class MainController {
     public String setGongSiMingCheng(@RequestBody SetGongSiMingChengDto dto) {
         mainService.setGongSiMingCheng(dto.id, dto.mingCheng);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -177,7 +177,7 @@ public class MainController {
     public String setGongSiJieSuanRi(@RequestBody SetGongSiJieSuanRiDto dto) {
         mainService.setGongSiJieSuanRi(dto.id, dto.jieSuanRi);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -195,9 +195,9 @@ public class MainController {
     @RequestMapping(value = "/admin/createXiangMu", method = RequestMethod.POST)
     @DtoValid
     public String createXiangMu(@RequestBody createXiangMuDto dto) {
-        mainService.createXiangMu(dto.mingCheng, dto.gongSiId);
+        XiangMu xiangMu = mainService.createXiangMu(dto.mingCheng, dto.gongSiId);
 
-        return PPResponse.response("ok");
+        return ppResponse.response(xiangMu);
     }
 
     @NoArgsConstructor
@@ -217,7 +217,7 @@ public class MainController {
     public String deleteXiangMu(@PathVariable Long id) {
         mainService.deleteXiangMu(id);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @ApiOperation(value = "添加项目计费标准", tags = {"Admin", "项目"})
@@ -226,7 +226,7 @@ public class MainController {
     public String addXiangMuJiFeiBiaoZhun(@RequestBody AddXiangMuJiFeiBiaoZhunDto dto) {
         mainService.addXiangMuJiFeiBiaoZhun(dto.xiangMuId, dto.yongHuId, dto.kaiShi, dto.xiaoShiFeiYong);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -252,7 +252,7 @@ public class MainController {
     public String removeXiangMuJiFeiBiaoZhun(@RequestBody RemoveXiangMuJiFeiBiaoZhun dto) {
         mainService.removeXiangMuJiFeiBiaoZhun(dto.xiangMuId, dto.yongHuId, dto.kaiShi);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -275,7 +275,7 @@ public class MainController {
     public String addXiangMuChengYuan(@RequestBody AddXiangMuChengYuan dto) {
         mainService.addXiangMuChengYuan(dto.xiangMuId, dto.yongHuId);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -293,9 +293,9 @@ public class MainController {
     @RequestMapping(value = "/admin/removeXiangMuChengYuan", method = RequestMethod.POST)
     @DtoValid
     public String removeXiangMuChengYuan(@RequestBody RemoveXiangMuChengYuan dto) {
-        mainService.addXiangMuChengYuan(dto.xiangMuId, dto.yongHuId);
+        mainService.removeXiangMuChengYuan(dto.xiangMuId, dto.yongHuId);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -321,7 +321,7 @@ public class MainController {
                     item.beiZhu);
         }
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -359,16 +359,16 @@ public class MainController {
     public String deleteYongHuGongZuoJiLu(@PathVariable Long id) {
         mainService.deleteGongZuoJiLu(id);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @ApiOperation(value = "新建支付", tags = {"Admin", "支付"})
     @RequestMapping(value = "/admin/createZhiFu", method = RequestMethod.POST)
     @DtoValid
     public String createZhiFu(@RequestBody CreateZhiFuDto dto) {
-        mainService.createZhiFu(dto.gongSiMingCheng, dto.riQi, dto.jinE, dto.beiZhu);
+        ZhiFu zhiFu = mainService.createZhiFu(dto.gongSiMingCheng, dto.riQi, dto.jinE, dto.beiZhu);
 
-        return PPResponse.response("ok");
+        return ppResponse.response(zhiFu);
     }
 
     @NoArgsConstructor
@@ -393,7 +393,7 @@ public class MainController {
     public String deleteZhiFu(@PathVariable Long id) {
         mainService.deleteZhiFu(id);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @ApiOperation(value = "生成报告", notes = "成功生成报告后, 把对应公司的结算日设置为报告结束日期", tags = {"Admin", "报告"})
@@ -415,7 +415,7 @@ public class MainController {
         }
         // -
 
-        return PPResponse.response(report);
+        return ppResponse.response(report);
     }
 
     @NoArgsConstructor
@@ -433,9 +433,7 @@ public class MainController {
     }
     // -
 
-    /**
-     * 设置当前用户密码
-     */
+    @ApiOperation(value = "设置当前用户密码", tags = {"用户"})
     @RequestMapping(value = "/changePassword", method = RequestMethod.POST)
     @DtoValid
     public String changePassword(Authentication authentication, @RequestBody PasswordDto dto) {
@@ -443,7 +441,7 @@ public class MainController {
 
         mainService.changePassword(yongHuId, dto.password);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -455,9 +453,7 @@ public class MainController {
         String password;
     }
 
-    /**
-     * 导入本人工作记录
-     */
+    @ApiOperation(value = "导入本人工作记录", tags = {"用户"})
     @RequestMapping(value = "/importGongZuoJiLu", method = RequestMethod.POST)
     @DtoValid
     public String importGongZuoJiLu(Authentication authentication, @RequestBody ImportGongZuoJiLuDto dto) {
@@ -471,7 +467,7 @@ public class MainController {
                     item.beiZhu);
         }
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
     }
 
     @NoArgsConstructor
@@ -483,6 +479,8 @@ public class MainController {
         List<GongZuoJiLuDto> data;
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     public static class GongZuoJiLuDto {
         @NotBlank
@@ -498,20 +496,62 @@ public class MainController {
         String beiZhu;
     }
 
-    /**
-     * 删除本人工作记录
-     */
-    @RequestMapping(value = "/admin/deleteGongZuoJiLu/{id}", method = RequestMethod.DELETE)
+    @ApiOperation(value = "删除本人工作记录", tags = {"用户"})
+    @RequestMapping(value = "/deleteGongZuoJiLu/{id}", method = RequestMethod.DELETE)
     @DtoValid
-    public String deleteGongZuoJiLu(@PathVariable Long id) {
+    public String deleteGongZuoJiLu(Authentication authentication, @PathVariable Long id) {
         GongZuoJiLu gongZuoJiLu = mainService.gainEntityWithExistsChecking(GongZuoJiLu.class, id);
+        String yongHuMing = ((YongHu) authentication.getPrincipal()).getYongHuMing();
 
-        if (gongZuoJiLu.getYongHu().getId() != id) {
+        if (!(gongZuoJiLu.getYongHu().getYongHuMing().equals(yongHuMing))) {
             throw new PPBusinessException("只能删除本人的工作记录!");
         }
 
         mainService.deleteGongZuoJiLu(id);
 
-        return PPResponse.response("ok");
+        return ppResponse.response("ok");
+    }
+
+    @ApiOperation(value = "查询自己的工作记录", tags = {"用户"})
+    @RequestMapping(value = "/queryGongZuoJiLu", method = RequestMethod.POST)
+    @DtoValid
+    public String queryGongZuoJiLu(Authentication authentication, @RequestBody QueryGongZuoJiLuDto dto) {
+        Long yongHuId = ((YongHu) authentication.getPrincipal()).getId();
+
+        if (dto.kaiShi == null) {
+            dto.kaiShi = MIN_DATE;
+        }
+
+        if (dto.jieShu == null) {
+            dto.jieShu = MAX_DATE;
+        }
+
+        if (dto.size == null) {
+            dto.size = 50;
+        }
+
+        if (dto.page == null) {
+            dto.page = 0;
+        }
+
+        List<GongZuoJiLu> gongZuoJiLus = mainService.queryGongZuoJiLu(yongHuId, dto.kaiShi.atStartOfDay(), dto.jieShu.plusDays(1).atStartOfDay(), dto.size, dto.page);
+
+        return ppResponse.response(gongZuoJiLus);
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Data
+    public static class QueryGongZuoJiLuDto {
+        LocalDate kaiShi;
+
+        LocalDate jieShu;
+
+        @Min(0)
+        @Max(200)
+        Integer size;
+
+        @Min(0)
+        Integer page;
     }
 }

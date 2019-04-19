@@ -9,6 +9,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -369,6 +372,19 @@ public class MainService {
     }
     // -
 
+    /**
+     * 查询工作记录
+     * <p>
+     * @param yongHuId 用户id
+     * @param kaiShi 开始日期(包含)
+     * @param jieShu 结束日期(不包含)
+     */
+    public List<GongZuoJiLu> queryGongZuoJiLu(Long yongHuId, LocalDateTime kaiShi, LocalDateTime jieShu, Integer size, Integer page) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("kaiShi").ascending());
+
+        return gongZuoJiLuRepository.findYongHuGongZuoJiLu(yongHuId, kaiShi, jieShu, pageable);
+    }
+
     // -报告
 
     /**
@@ -385,10 +401,10 @@ public class MainService {
         List<GongZuoJiLu> gongZuoJiLus = gongZuoJiLuRepository.findGongSiGongZuoJiLu(gongSiId, jieShu.plusDays(1).atStartOfDay());
 
         // 开始日期消费总额
-        BigDecimal kaiShiCostTotal = new BigDecimal(0);
+        BigDecimal kaiShiCostTotal = new BigDecimal("0");
 
         // 结束日期消费总额
-        BigDecimal jieShuCostTotal = new BigDecimal(0);
+        BigDecimal jieShuCostTotal = new BigDecimal("0");
 
         for (GongZuoJiLu gongZuoJiLu : gongZuoJiLus) {
             JSONObject jsonObject = new JSONObject();
@@ -405,10 +421,10 @@ public class MainService {
             }
 
             BigDecimal xiaoShiFeiYong = optionalJiFeiBiaoZhun.get().getXiaoShiFeiYong();
-            BigDecimal secondCost = xiaoShiFeiYong.divide(new BigDecimal(3600), MathContext.DECIMAL128);
+            BigDecimal secondCost = xiaoShiFeiYong.divide(new BigDecimal("3600"), MathContext.DECIMAL128);
 
             Duration duration = Duration.between(gongZuoJiLu.getKaiShi(), gongZuoJiLu.getJieShu());
-            BigDecimal cost = secondCost.multiply(new BigDecimal(duration.getSeconds()));
+            BigDecimal cost = secondCost.multiply(new BigDecimal("" + duration.getSeconds()));
 
             if (gongZuoJiLu.getKaiShi().isBefore(kaiShi.atStartOfDay())) {
                 kaiShiCostTotal = kaiShiCostTotal.add(cost);
@@ -428,7 +444,7 @@ public class MainService {
                 jsonObject.put("结束:", gongZuoJiLu.getJieShu());
                 jsonObject.put("项目:", gongZuoJiLu.getXiangMu().getMingCheng());
                 jsonObject.put("人员:", gongZuoJiLu.getYongHu().getYongHuMing());
-                jsonObject.put("耗时:", secondCost.divide(new BigDecimal(3600), MathContext.DECIMAL128));
+                jsonObject.put("耗时:", secondCost.divide(new BigDecimal("" + 3600), MathContext.DECIMAL128));
                 jsonObject.put("费用:", cost);
 
                 gongZuoJiLusJsonArray.put(jsonObject);
