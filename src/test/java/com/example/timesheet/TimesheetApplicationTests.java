@@ -204,6 +204,39 @@ public class TimesheetApplicationTests {
         return request(url, HttpMethod.POST, yongHuMing, requestBodyFieldValues);
     }
 
+    protected void dump() {
+        String executeCmd = "mysqldump -u " + "root" + " -p" + 123456 + " --add-drop-database -B " + "timesheet" + " -r " + "src/test/resources/ppdump.sql";
+        Process runtimeProcess;
+        try {
+            runtimeProcess = Runtime.getRuntime().exec(executeCmd);
+            int processComplete = runtimeProcess.waitFor();
+            if (processComplete == 0) {
+                log.info("Backup created successfully");
+            } else {
+                log.info("Could not create the backup");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    protected void restore() {
+        String[] executeCmd = new String[]{"mysql", "--user=" + "root", "--password=" + "123456", "-e", "source " + "src/test/resources/ppdump.sql"};
+
+        Process runtimeProcess;
+        try {
+            runtimeProcess = Runtime.getRuntime().exec(executeCmd);
+            int processComplete = runtimeProcess.waitFor();
+            if (processComplete == 0) {
+                log.info("Backup restored successfully");
+            } else {
+                log.info("Could not restore the backup");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     @Test
     public void foo() {
 

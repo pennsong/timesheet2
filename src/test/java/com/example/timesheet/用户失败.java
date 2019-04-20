@@ -22,15 +22,16 @@ import java.util.Optional;
 public class 用户失败 extends TimesheetApplicationTests {
     @Before
     public void before() {
-        ResponseEntity<String> response = request(
-                "/test/yongHuShiBai",
-                HttpMethod.GET,
-                null
-        );
-        checkCode(response, PPOK);
-
         if (!init) {
             init = true;
+            ResponseEntity<String> response = request(
+                    "/test/yongHuShiBai",
+                    HttpMethod.GET,
+                    null
+            );
+            checkCode(response, PPOK);
+
+            dump();
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -40,6 +41,8 @@ public class 用户失败 extends TimesheetApplicationTests {
                 cookie = login("y" + i, "1234");
                 cookies.put("y" + i, cookie);
             }
+        } else {
+            restore();
         }
     }
 

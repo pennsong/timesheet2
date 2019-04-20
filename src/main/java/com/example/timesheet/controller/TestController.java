@@ -66,18 +66,8 @@ public class TestController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private void clearData() {
-        log.info("pptest: clearData");
-        gongZuoJiLuRepository.deleteAll();
-        zhiFuRepository.deleteAll();
-        xiangMuRepository.deleteAll();
-        gongSiRepository.deleteAll();
-        yongHuRepository.deleteAll();
-    }
-
     @RequestMapping("/test/adminChengGong")
     public String admin成功() {
-        clearData();
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
@@ -170,7 +160,6 @@ public class TestController {
 
     @RequestMapping("/test/adminFuZaChengGong")
     public String admin复杂成功() {
-        clearData();
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
@@ -263,7 +252,6 @@ public class TestController {
 
     @RequestMapping("/test/adminShiBai")
     public String admin失败() {
-        clearData();
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
@@ -356,7 +344,6 @@ public class TestController {
 
     @RequestMapping("/test/yongHuChengGong")
     public String 用户成功() {
-        clearData();
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
@@ -449,7 +436,6 @@ public class TestController {
 
     @RequestMapping("/test/yongHuFuZaChengGong")
     public String 用户复杂成功() {
-        clearData();
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
@@ -542,7 +528,6 @@ public class TestController {
 
     @RequestMapping("/test/yongHuShiBai")
     public String 用户失败() {
-        clearData();
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
