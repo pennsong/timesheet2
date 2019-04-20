@@ -366,15 +366,16 @@ public class MainService {
     public ZhiFu createZhiFu(String gongSiMingCheng, LocalDate riQi, BigDecimal jinE, String beiZhu) {
         GongSi gongSi = gongSiRepository.findOneByMingCheng(gongSiMingCheng);
 
+        if (gongSi == null) {
+            throw new PPItemNotExistException("没有找到对应公司!");
+        }
+
         // --时间不能早于或等于公司的结算日
         if (riQi.isBefore(gongSi.getJieSuanRi().plusDays(1))) {
             throw new PPBusinessException("支付时间不能早于或等于公司的结算日!");
         }
         // --
 
-        if (gongSi == null) {
-            throw new PPItemNotExistException("没有找到对应公司!");
-        }
         ZhiFu zhiFu = new ZhiFu(null, gongSi, riQi, jinE, beiZhu);
 
         return zhiFuRepository.save(zhiFu);

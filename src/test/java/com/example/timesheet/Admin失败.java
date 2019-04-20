@@ -57,7 +57,7 @@ public class Admin失败 extends TimesheetApplicationTests {
     }
 
     @Test
-    public void 新建用户_失败_重名() {
+    public void 新建用户_重名() {
         ResponseEntity<String> response = request(
                 "/admin/createGongSi",
                 HttpMethod.POST,
@@ -68,7 +68,7 @@ public class Admin失败 extends TimesheetApplicationTests {
     }
 
     @Test
-    public void 删除用户_失败_有分配到项目() {
+    public void 删除用户_有分配到项目() {
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y2");
 
         ResponseEntity<String> response = request(
@@ -83,7 +83,7 @@ public class Admin失败 extends TimesheetApplicationTests {
     }
 
     @Test
-    public void 删除用户_失败_有工作记录() {
+    public void 删除用户_有工作记录() {
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
 
         ResponseEntity<String> response = request(
@@ -98,7 +98,7 @@ public class Admin失败 extends TimesheetApplicationTests {
     }
 
     @Test
-    public void 新建公司_失败_重名() {
+    public void 新建公司_重名() {
         ResponseEntity<String> response = request(
                 "/admin/createGongSi",
                 HttpMethod.POST,
@@ -109,7 +109,7 @@ public class Admin失败 extends TimesheetApplicationTests {
     }
 
     @Test
-    public void 删除公司_失败_有项目() {
+    public void 删除公司_有项目() {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 
         ResponseEntity<String> response = request(
@@ -124,7 +124,7 @@ public class Admin失败 extends TimesheetApplicationTests {
     }
 
     @Test
-    public void 设置公司名称_失败_重名() {
+    public void 设置公司名称_重名() {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 
         ResponseEntity<String> response = request(
@@ -139,7 +139,7 @@ public class Admin失败 extends TimesheetApplicationTests {
 
 //    @Test
     // todo 这个要归入整体套路测试
-//    public void 设置公司结算日_失败_日期不合法() {
+//    public void 设置公司结算日_日期不合法() {
 //        GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 //
 //        PPJson ppJson = new PPJson();
@@ -156,7 +156,7 @@ public class Admin失败 extends TimesheetApplicationTests {
 //    }
 
     @Test
-    public void 新建项目_失败_重名() {
+    public void 新建项目_重名() {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 
         ResponseEntity<String> response = request(
@@ -171,7 +171,7 @@ public class Admin失败 extends TimesheetApplicationTests {
     }
 
     @Test
-    public void 删除项目_失败_有工作记录() {
+    public void 删除项目_有工作记录() {
         XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
 
         ResponseEntity<String> response = request(
@@ -796,6 +796,20 @@ public class Admin失败 extends TimesheetApplicationTests {
         Assert.assertTrue(gongZuoJiLuOptional.isPresent());
     }
 
+    @Test
+    public void 新建支付_公司不存在() {
+        ResponseEntity<String> response = request(
+                "/admin/createZhiFu",
+                HttpMethod.POST,
+                "Admin",
+                "gongSiMingCheng, none",
+                "riQi, 2000-03-01",
+                "jinE, 1.1",
+                "beiZhu, testPayment"
+        );
+        checkCode(response, PPItemNotExistExceptionCode);
+    }
+    
     @Test
     public void 新建支付_$设置公司结算日_新建结算日的支付_新建结算日之前的支付() {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
