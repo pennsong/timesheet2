@@ -5,6 +5,7 @@ import com.example.timesheet.model.GongZuoJiLu;
 import com.example.timesheet.model.XiangMu;
 import com.example.timesheet.model.YongHu;
 import com.example.timesheet.util.PPJson;
+import com.example.timesheet.util.PPUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.junit.Assert;
@@ -20,10 +21,15 @@ import java.util.Optional;
 @Slf4j
 //@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class 用户失败 extends TimesheetApplicationTests {
+    private static boolean init = false;
+
     @Before
     public void before() {
         if (!init) {
             init = true;
+
+            PPUtil.restore("emptyDB");
+
             ResponseEntity<String> response = request(
                     "/test/yongHuShiBai",
                     HttpMethod.GET,
@@ -31,7 +37,7 @@ public class 用户失败 extends TimesheetApplicationTests {
             );
             checkCode(response, PPOK);
 
-            dump();
+            PPUtil.dump("yongHuShiBai");
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -42,7 +48,7 @@ public class 用户失败 extends TimesheetApplicationTests {
                 cookies.put("y" + i, cookie);
             }
         } else {
-            restore();
+            PPUtil.restore("yongHuShiBai");
         }
     }
 

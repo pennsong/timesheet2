@@ -2,6 +2,7 @@ package com.example.timesheet;
 
 import com.example.timesheet.model.*;
 import com.example.timesheet.util.PPJson;
+import com.example.timesheet.util.PPUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,10 +25,15 @@ import static com.example.timesheet.util.PPUtil.MIN_DATE;
 
 @Slf4j
 public class 用户成功 extends TimesheetApplicationTests {
+    private static boolean init = false;
+
     @Before
     public void before() {
         if (!init) {
             init = true;
+
+            PPUtil.restore("emptyDB");
+
             ResponseEntity<String> response = request(
                     "/test/yongHuChengGong",
                     HttpMethod.GET,
@@ -35,7 +41,7 @@ public class 用户成功 extends TimesheetApplicationTests {
             );
             checkCode(response, PPOK);
 
-            dump();
+            PPUtil.dump("yongHuChengGong");
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -46,7 +52,7 @@ public class 用户成功 extends TimesheetApplicationTests {
                 cookies.put("y" + i, cookie);
             }
         } else {
-            restore();
+            PPUtil.restore("yongHuChengGong");
         }
     }
 

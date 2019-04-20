@@ -4,6 +4,7 @@ import com.example.timesheet.model.GongSi;
 import com.example.timesheet.model.XiangMu;
 import com.example.timesheet.model.YongHu;
 import com.example.timesheet.util.PPJson;
+import com.example.timesheet.util.PPUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
@@ -15,10 +16,15 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class Admin复杂成功 extends TimesheetApplicationTests {
+    private static boolean init = false;
+
     @Before
     public void before() {
         if (!init) {
             init = true;
+
+            PPUtil.restore("emptyDB");
+
             ResponseEntity<String> response = request(
                     "/test/adminFuZaChengGong",
                     HttpMethod.GET,
@@ -26,7 +32,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
             );
             checkCode(response, PPOK);
 
-            dump();
+            PPUtil.dump("adminFuZaChengGong");
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -37,7 +43,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
                 cookies.put("y" + i, cookie);
             }
         } else {
-            restore();
+            PPUtil.restore("adminFuZaChengGong");
         }
     }
 
