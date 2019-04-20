@@ -12,12 +12,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.*;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
@@ -26,29 +31,38 @@ import static com.example.timesheet.util.PPUtil.MIN_DATE;
 
 @Slf4j
 public class Admin成功 extends TimesheetApplicationTests {
-    private static HttpHeaders headers;
 
     @Before
-    public void login() {
-        if (headers == null) {
-            headers = new HttpHeaders();
-            String setCookie = super.login("Admin", "1234");
-            headers.add(HttpHeaders.COOKIE, setCookie);
-            headers.setContentType(MediaType.APPLICATION_JSON);
+    public void before() {
+        ResponseEntity<String> response = request(
+                "/test/adminChengGong",
+                HttpMethod.GET,
+                null
+        );
+        checkCode(response, PPOK);
+
+        if (!init) {
+            init = true;
+
+            // 获取登录cookies
+            String cookie = login("Admin", "1234");
+            cookies.put("Admin", cookie);
+
+            for (int i = 1; i <= 3; i++) {
+                cookie = login("y" + i, "1234");
+                cookies.put("y" + i, cookie);
+            }
         }
     }
 
     @Test
     public void 新建用户() {
-        PPJson ppJson = new PPJson();
-        ppJson.put("mingCheng", "gt1");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/createGongSi",
+                HttpMethod.POST,
+                "Admin",
+                "mingCheng, gt1"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/createGongSi", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -62,11 +76,12 @@ public class Admin成功 extends TimesheetApplicationTests {
     public void 删除用户() {
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y3");
 
-        HttpEntity<String> request = new HttpEntity<>(
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/deleteYongHu/" + yongHu.getId(),
+                HttpMethod.DELETE,
+                "Admin",
+                "mingCheng, gt1"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/deleteYongHu/" + yongHu.getId(), HttpMethod.DELETE, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -80,16 +95,13 @@ public class Admin成功 extends TimesheetApplicationTests {
     public void 设置指定用户密码() {
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("yongHuId", yongHu.getId());
-        ppJson.put("password", "5678");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/setYongHuPassword",
+                HttpMethod.POST,
+                "Admin",
+                "yongHuId," + yongHu.getId(),
+                "password, 5678"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/setYongHuPassword", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
@@ -102,15 +114,12 @@ public class Admin成功 extends TimesheetApplicationTests {
 
     @Test
     public void 新建公司() {
-        PPJson ppJson = new PPJson();
-        ppJson.put("mingCheng", "gt1");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/createGongSi",
+                HttpMethod.POST,
+                "Admin",
+                "mingCheng, gt1"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/createGongSi", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -124,11 +133,11 @@ public class Admin成功 extends TimesheetApplicationTests {
     public void 删除公司() {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g3");
 
-        HttpEntity<String> request = new HttpEntity<>(
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/deleteGongSi/" + +gongSi.getId(),
+                HttpMethod.DELETE,
+                "Admin"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/deleteGongSi/" + gongSi.getId(), HttpMethod.DELETE, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -142,16 +151,13 @@ public class Admin成功 extends TimesheetApplicationTests {
     public void 设置公司名称() {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("id", gongSi.getId());
-        ppJson.put("mingCheng", "g1c");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/setGongSiMingCheng/",
+                HttpMethod.POST,
+                "Admin",
+                "id, " + gongSi.getId(),
+                "mingCheng, g1c"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/setGongSiMingCheng", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -165,16 +171,13 @@ public class Admin成功 extends TimesheetApplicationTests {
     public void 设置公司结算日() {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("id", gongSi.getId());
-        ppJson.put("jieSuanRi", "2000-01-01");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/setGongSiJieSuanRi",
+                HttpMethod.POST,
+                "Admin",
+                "id, " + gongSi.getId(),
+                "jieSuanRi, 2000-01-01"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/setGongSiJieSuanRi", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -188,16 +191,13 @@ public class Admin成功 extends TimesheetApplicationTests {
     public void 新建项目() {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("mingCheng", "g1x3");
-        ppJson.put("gongSiId", gongSi.getId());
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/createXiangMu",
+                HttpMethod.POST,
+                "Admin",
+                "mingCheng, g1x3",
+                "gongSiId, " + gongSi.getId()
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/createXiangMu", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -212,11 +212,11 @@ public class Admin成功 extends TimesheetApplicationTests {
     public void 删除项目() {
         XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x2");
 
-        HttpEntity<String> request = new HttpEntity<>(
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/deleteXiangMu/" + xiangMu.getId(),
+                HttpMethod.DELETE,
+                "Admin"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/deleteXiangMu/" + xiangMu.getId(), HttpMethod.DELETE, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -231,18 +231,15 @@ public class Admin成功 extends TimesheetApplicationTests {
         XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("xiangMuId", xiangMu.getId());
-        ppJson.put("yongHuId", yongHu.getId());
-        ppJson.put("kaiShi", "2000-02-01");
-        ppJson.put("xiaoShiFeiYong", "501");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/addXiangMuJiFeiBiaoZhun",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + xiangMu.getId(),
+                "yongHuId," + yongHu.getId(),
+                "kaiShi, 2000-02-01",
+                "xiaoShiFeiYong, 501"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/addXiangMuJiFeiBiaoZhun", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -257,7 +254,7 @@ public class Admin成功 extends TimesheetApplicationTests {
                                         &&
                                         item.getXiaoShiFeiYong().compareTo(new BigDecimal("501")) == 0
                                         &&
-                                        item.getYongHu().getId() == yongHu.getId()
+                                        item.getYongHu().getId().compareTo(yongHu.getId()) == 0
                 );
 
         Assert.assertTrue(result);
@@ -268,17 +265,14 @@ public class Admin成功 extends TimesheetApplicationTests {
         XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("xiangMuId", xiangMu.getId());
-        ppJson.put("yongHuId", yongHu.getId());
-        ppJson.put("kaiShi", "2000-01-01");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/removeXiangMuJiFeiBiaoZhun",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + xiangMu.getId(),
+                "yongHuId," + yongHu.getId(),
+                "kaiShi, 2000-01-01"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/removeXiangMuJiFeiBiaoZhun", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -291,7 +285,7 @@ public class Admin成功 extends TimesheetApplicationTests {
                         item ->
                                 item.getKaiShi().isEqual(LocalDate.of(2000, 1, 1))
                                         &&
-                                        item.getYongHu().getId() == yongHu.getId()
+                                        item.getYongHu().getId().compareTo(yongHu.getId()) == 0
                 );
 
         Assert.assertTrue(result);
@@ -299,19 +293,17 @@ public class Admin成功 extends TimesheetApplicationTests {
 
     @Test
     public void 添加项目成员() {
+        log.info("pptest: 添加项目成员1");
         XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y3");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("xiangMuId", xiangMu.getId());
-        ppJson.put("yongHuId", yongHu.getId());
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/addXiangMuChengYuan",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + xiangMu.getId(),
+                "yongHuId," + yongHu.getId()
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/addXiangMuChengYuan", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -324,11 +316,12 @@ public class Admin成功 extends TimesheetApplicationTests {
                         item ->
                                 item.getKaiShi().isEqual(MIN_DATE)
                                         &&
-                                        item.getYongHu().getId() == yongHu.getId()
+                                        item.getYongHu().getId().compareTo(yongHu.getId()) == 0
                                         &&
                                         item.getXiaoShiFeiYong().compareTo(yongHu.getXiaoShiFeiYong()) == 0
                 ).count();
 
+        log.info("pptest: 添加项目成员2");
         Assert.assertTrue(count == 1);
     }
 
@@ -337,16 +330,13 @@ public class Admin成功 extends TimesheetApplicationTests {
         XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y2");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("xiangMuId", xiangMu.getId());
-        ppJson.put("yongHuId", yongHu.getId());
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/removeXiangMuChengYuan",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + xiangMu.getId(),
+                "yongHuId," + yongHu.getId()
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/removeXiangMuChengYuan", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -357,7 +347,7 @@ public class Admin成功 extends TimesheetApplicationTests {
                 .stream()
                 .noneMatch(
                         item ->
-                                item.getYongHu().getId() == yongHu.getId()
+                                item.getYongHu().getId().compareTo(yongHu.getId()) == 0
                 );
 
         Assert.assertTrue(result);
@@ -375,8 +365,8 @@ public class Admin成功 extends TimesheetApplicationTests {
         PPJson gongZuoJiLu2 = new PPJson();
         gongZuoJiLu2.put("yongHuMing", "y1");
         gongZuoJiLu2.put("xiangMuMingCheng", "g1x1");
-        gongZuoJiLu2.put("kaiShi", "2000-01-02T00:00");
-        gongZuoJiLu2.put("jieShu", "2000-01-03T00:00");
+        gongZuoJiLu2.put("kaiShi", "2000-01-03T00:00");
+        gongZuoJiLu2.put("jieShu", "2000-01-04T00:00");
         gongZuoJiLu2.put("beiZhu", "testNote");
 
         JSONArray jsonArray = new JSONArray();
@@ -386,14 +376,12 @@ public class Admin成功 extends TimesheetApplicationTests {
         PPJson ppJson = new PPJson();
         ppJson.put("data", jsonArray);
 
-        log.info(ppJson.toString());
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/importYongHuGongZuoJiLu",
+                HttpMethod.POST,
+                "Admin",
+                ppJson
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/importYongHuGongZuoJiLu", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -423,9 +411,9 @@ public class Admin成功 extends TimesheetApplicationTests {
                                 &&
                                 item.getXiangMu().getMingCheng().equals("g1x1")
                                 &&
-                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 2, 0, 0))
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 3, 0, 0))
                                 &&
-                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 2, 23, 59, 59))
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 3, 23, 59, 59))
                                 &&
                                 item.getBeiZhu().equals("testNote")
                 );
@@ -439,9 +427,9 @@ public class Admin成功 extends TimesheetApplicationTests {
                                 &&
                                 item.getXiangMu().getMingCheng().equals("g1x1")
                                 &&
-                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 3, 0, 0))
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 4, 0, 0))
                                 &&
-                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 3, 0, 0))
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 4, 0, 0))
                                 &&
                                 item.getBeiZhu().equals("testNote")
                 );
@@ -455,11 +443,11 @@ public class Admin成功 extends TimesheetApplicationTests {
 
         Long id = gongZuoJiLuOptional.get().getId();
 
-        HttpEntity<String> request = new HttpEntity<>(
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/deleteYongHuGongZuoJiLu/" + id,
+                HttpMethod.DELETE,
+                "Admin"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/deleteYongHuGongZuoJiLu/" + id, HttpMethod.DELETE, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -471,18 +459,15 @@ public class Admin成功 extends TimesheetApplicationTests {
 
     @Test
     public void 新建支付() {
-        PPJson ppJson = new PPJson();
-        ppJson.put("gongSiMingCheng", "g1");
-        ppJson.put("riQi", "2000-03-01");
-        ppJson.put("jinE", "1.1");
-        ppJson.put("beiZhu", "testPayment");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/createZhiFu",
+                HttpMethod.POST,
+                "Admin",
+                "gongSiMingCheng, g1",
+                "riQi, 2000-03-01",
+                "jinE, 1.1",
+                "beiZhu, testPayment"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/createZhiFu/", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -504,11 +489,11 @@ public class Admin成功 extends TimesheetApplicationTests {
 
         Long id = zhiFuOptional.get().getId();
 
-        HttpEntity<String> request = new HttpEntity<>(
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/deleteZhiFu/" + id,
+                HttpMethod.DELETE,
+                "Admin"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/deleteZhiFu/" + id, HttpMethod.DELETE, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -522,20 +507,24 @@ public class Admin成功 extends TimesheetApplicationTests {
     public void 生成报告() throws JSONException {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("gongSiId", gongSi.getId());
-        ppJson.put("kaiShi", MIN_DATE);
-        ppJson.put("jieShu", MAX_DATE);
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/admin/generateBaoGao",
+                HttpMethod.POST,
+                "Admin",
+                "gongSiId, " + gongSi.getId(),
+                "kaiShi, 1900-01-01",
+                "jieShu, 2900-12-31"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/admin/generateBaoGao", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         JSONObject jsonObject = new JSONObject(response.getBody());
         Assert.assertEquals(96, ((JSONObject) (jsonObject.get("data"))).get("期末Balance:"));
+
+        // 检查成功设置结算日
+        // 清空当前repository以从数据库获取最新数据
+        entityManager.clear();
+
+        gongSi.getJieSuanRi().isEqual(LocalDate.of(2900, 12, 31));
+
     }
 }

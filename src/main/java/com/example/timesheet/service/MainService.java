@@ -62,9 +62,9 @@ public class MainService {
     /**
      * 新建用户
      *
-     * @param yongHuMing 用户名
-     * @param password   密码
-     * @param xiaoShiFeiYong   小时费用
+     * @param yongHuMing     用户名
+     * @param password       密码
+     * @param xiaoShiFeiYong 小时费用
      */
     public YongHu createYongHu(String yongHuMing, String password, BigDecimal xiaoShiFeiYong) {
         YongHu yongHu = new YongHu(null, yongHuMing, passwordEncoder.encode(password), xiaoShiFeiYong, Arrays.asList("USER"));
@@ -265,7 +265,8 @@ public class MainService {
      * <p>
      * 1) 项目没有用户的计费标准, 抛异常, 不允许添加<br>
      * 2) 工作记录的时间早于或等于项目所属公司的计算日, 抛异常, 不允许添加<br>
-     * 3) 如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录
+     * 3) 如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录<br>
+     * 4) 如工作记录时间段有重叠, 抛异常, 不允许添加
      *
      * @param yongHuMing       用户名
      * @param xiangMuMingCheng 项目名称
@@ -296,6 +297,13 @@ public class MainService {
         }
         // --
 
+        // --
+        Long overLapedGongZuoJiLuCount = gongZuoJiLuRepository.findByOverlapWorkRecords(yongHu.getId(), kaiShi, jieShu);
+        if (overLapedGongZuoJiLuCount > 0) {
+            throw new PPBusinessException("工作记录时间段有重叠, 不允许添加!");
+        }
+        // --
+
         // --如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录
         List<GongZuoJiLu> gongZuoJiLus = new ArrayList<>();
         Long days = DAYS.between(kaiShi.toLocalDate(), jieShu.toLocalDate());
@@ -322,10 +330,22 @@ public class MainService {
 
     /**
      * 删除工作记录
+     * <p>
+     * 1) 如工作记录时间小于等于公司结算日, 则抛异常, 不允许删除
      *
      * @param id 工作记录id
      */
     public void deleteGongZuoJiLu(Long id) {
+        GongZuoJiLu gongZuoJiLu = gainEntityWithExistsChecking(GongZuoJiLu.class, id);
+
+        // 如工作记录时间小于等于公司结算日, 则抛异常, 不允许删除
+        LocalDateTime kaishi = gongZuoJiLu.getKaiShi();
+        LocalDate jieSuanRi = gongZuoJiLu.getXiangMu().getGongSi().getJieSuanRi();
+
+        if (kaishi.toLocalDate().isEqual(jieSuanRi) || kaishi.toLocalDate().isBefore(jieSuanRi)) {
+            throw new PPBusinessException("工作记录时间小于等于公司结算日, 不允许删除!");
+        }
+
         gongZuoJiLuRepository.deleteById(id);
     }
     // -
@@ -363,11 +383,21 @@ public class MainService {
     /**
      * 删除支付
      * <p>
-     * 1) 时间不能早于或等于公司的结算日
+     * 1) 如时间小于等于公司结算日, 则抛异常, 不允许删除
      *
      * @param id 支付id
      */
     public void deleteZhiFu(Long id) {
+        ZhiFu zhiFu = gainEntityWithExistsChecking(ZhiFu.class, id);
+
+        // 如时间小于等于公司结算日, 则抛异常, 不允许删除
+        LocalDate zhiFuRiQi = zhiFu.getRiQi();
+        LocalDate jieSuanRi = zhiFu.getGongSi().getJieSuanRi();
+
+        if (zhiFuRiQi.isEqual(jieSuanRi) || zhiFuRiQi.isBefore(jieSuanRi)) {
+            throw new PPBusinessException("支付时间小于等于公司结算日, 不允许删除!");
+        }
+
         zhiFuRepository.deleteById(id);
     }
     // -
@@ -375,9 +405,10 @@ public class MainService {
     /**
      * 查询工作记录
      * <p>
+     *
      * @param yongHuId 用户id
-     * @param kaiShi 开始日期(包含)
-     * @param jieShu 结束日期(不包含)
+     * @param kaiShi   开始日期(包含)
+     * @param jieShu   结束日期(不包含)
      */
     public List<GongZuoJiLu> queryGongZuoJiLu(Long yongHuId, LocalDateTime kaiShi, LocalDateTime jieShu, Integer size, Integer page) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("kaiShi").ascending());
@@ -412,7 +443,7 @@ public class MainService {
             List<JiFeiBiaoZhun> jiFeiBiaoZhuns = xiangMu.getJiFeiBiaoZhuns();
 
             Optional<JiFeiBiaoZhun> optionalJiFeiBiaoZhun = jiFeiBiaoZhuns.stream().filter(
-                    item -> item.getYongHu().getId() == gongZuoJiLu.getYongHu().getId()
+                    item -> item.getYongHu().getId().compareTo(gongZuoJiLu.getYongHu().getId()) == 0
                             && item.getKaiShi().isBefore(gongZuoJiLu.getKaiShi().toLocalDate().plusDays(1))
             ).findFirst();
 

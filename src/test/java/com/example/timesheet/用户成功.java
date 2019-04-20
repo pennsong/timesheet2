@@ -24,15 +24,26 @@ import static com.example.timesheet.util.PPUtil.MIN_DATE;
 
 @Slf4j
 public class 用户成功 extends TimesheetApplicationTests {
-    private static HttpHeaders headers;
-
     @Before
-    public void login() {
-        if (headers == null) {
-            headers = new HttpHeaders();
-            String setCookie = super.login("y1", "1234");
-            headers.add(HttpHeaders.COOKIE, setCookie);
-            headers.setContentType(MediaType.APPLICATION_JSON);
+    public void before() {
+        ResponseEntity<String> response = request(
+                "/test/yongHuChengGong",
+                HttpMethod.GET,
+                null
+        );
+        checkCode(response, PPOK);
+
+        if (!init) {
+            init = true;
+
+            // 获取登录cookies
+            String cookie = login("Admin", "1234");
+            cookies.put("Admin", cookie);
+
+            for (int i = 1; i <= 3; i++) {
+                cookie = login("y" + i, "1234");
+                cookies.put("y" + i, cookie);
+            }
         }
     }
 
@@ -40,16 +51,14 @@ public class 用户成功 extends TimesheetApplicationTests {
     public void 设置当前用户密码() {
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
 
-        PPJson ppJson = new PPJson();
-        ppJson.put("password", "5678");
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/changePassword",
+                HttpMethod.POST,
+                "y1",
+                "password, 5678"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/changePassword", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
+
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("username", "y1");
@@ -69,8 +78,8 @@ public class 用户成功 extends TimesheetApplicationTests {
 
         PPJson gongZuoJiLu2 = new PPJson();
         gongZuoJiLu2.put("xiangMuMingCheng", "g1x1");
-        gongZuoJiLu2.put("kaiShi", "2000-01-02T00:00");
-        gongZuoJiLu2.put("jieShu", "2000-01-03T00:00");
+        gongZuoJiLu2.put("kaiShi", "2000-01-03T00:00");
+        gongZuoJiLu2.put("jieShu", "2000-01-04T00:00");
         gongZuoJiLu2.put("beiZhu", "testNote");
 
         JSONArray jsonArray = new JSONArray();
@@ -80,14 +89,12 @@ public class 用户成功 extends TimesheetApplicationTests {
         PPJson ppJson = new PPJson();
         ppJson.put("data", jsonArray);
 
-        log.info(ppJson.toString());
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/importGongZuoJiLu",
+                HttpMethod.POST,
+                "y1",
+                ppJson
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/importGongZuoJiLu", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -117,9 +124,9 @@ public class 用户成功 extends TimesheetApplicationTests {
                                 &&
                                 item.getXiangMu().getMingCheng().equals("g1x1")
                                 &&
-                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 2, 0, 0))
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 3, 0, 0))
                                 &&
-                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 2, 23, 59, 59))
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 3, 23, 59, 59))
                                 &&
                                 item.getBeiZhu().equals("testNote")
                 );
@@ -133,9 +140,9 @@ public class 用户成功 extends TimesheetApplicationTests {
                                 &&
                                 item.getXiangMu().getMingCheng().equals("g1x1")
                                 &&
-                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 3, 0, 0))
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 4, 0, 0))
                                 &&
-                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 3, 0, 0))
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 4, 0, 0))
                                 &&
                                 item.getBeiZhu().equals("testNote")
                 );
@@ -151,11 +158,11 @@ public class 用户成功 extends TimesheetApplicationTests {
 
         Long id = gongZuoJiLuOptional.get().getId();
 
-        HttpEntity<String> request = new HttpEntity<>(
-                headers
+        ResponseEntity<String> response = request(
+                "/deleteGongZuoJiLu/" + id ,
+                HttpMethod.DELETE,
+                "y1"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/deleteGongZuoJiLu/" + id, HttpMethod.DELETE, request, String.class);
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
@@ -167,14 +174,11 @@ public class 用户成功 extends TimesheetApplicationTests {
 
     @Test
     public void 查询自己的工作记录() throws JSONException {
-        PPJson ppJson = new PPJson();
-
-        HttpEntity<String> request = new HttpEntity<>(
-                ppJson.toString(),
-                headers
+        ResponseEntity<String> response = request(
+                "/queryGongZuoJiLu" ,
+                HttpMethod.POST,
+                "y1"
         );
-
-        ResponseEntity<String> response = restTemplate.exchange("/queryGongZuoJiLu", HttpMethod.POST, request, String.class);
         checkCode(response, PPOK);
 
         JSONObject jsonObject = new JSONObject(response.getBody());

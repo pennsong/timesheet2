@@ -16,7 +16,7 @@ public interface GongZuoJiLuRepository extends PagingAndSortingRepository<GongZu
     /**
      * 指定用户是否有在指定项目上的工作记录
      *
-     * @param yongHuId 用户id
+     * @param yongHuId  用户id
      * @param xiangMuId 项目id
      */
     @Query("select " +
@@ -29,10 +29,10 @@ public interface GongZuoJiLuRepository extends PagingAndSortingRepository<GongZu
     Boolean findByYongHuAndXiangMu(@Param("yongHuId") Long yongHuId, @Param("xiangMuId") Long xiangMuId);
 
     /**
-     * 指定时间段内的工作记录
+     * 指定公司截止到结束日期的工作记录
      *
      * @param gongSiId 公司id
-     * @param jieShu 结束日期时间 小于
+     * @param jieShu   结束日期时间 小于
      */
     @Query("select " +
             "g " +
@@ -45,11 +45,11 @@ public interface GongZuoJiLuRepository extends PagingAndSortingRepository<GongZu
     List<GongZuoJiLu> findGongSiGongZuoJiLu(@Param("gongSiId") Long gongSiId, @Param("jieShu") LocalDateTime jieShu);
 
     /**
-     * 指定时间段内的工作记录
+     * 指定公司指定时间段内的工作记录
      *
      * @param gongSiId 公司id
-     * @param kaiShi 开始日期时间 大于等于
-     * @param jieShu 结束日期时间 小于
+     * @param kaiShi   开始日期时间 大于等于
+     * @param jieShu   结束日期时间 小于
      */
     @Query("select " +
             "g " +
@@ -58,7 +58,7 @@ public interface GongZuoJiLuRepository extends PagingAndSortingRepository<GongZu
             "join x.gongSi gs " +
             "where gs.id = :gongSiId " +
             "and g.kaiShi >= :kaiShi " +
-            "and g.kaiShi < :jieShu " +
+            "and g.jieShu < :jieShu " +
             "order by g.xiangMu, g.kaiShi")
     List<GongZuoJiLu> findGongSiGongZuoJiLu(@Param("gongSiId") Long gongSiId, @Param("kaiShi") LocalDateTime kaiShi, @Param("jieShu") LocalDateTime jieShu);
 
@@ -66,8 +66,8 @@ public interface GongZuoJiLuRepository extends PagingAndSortingRepository<GongZu
      * 指定人员的指定时间段工作记录
      *
      * @param yongHuId 用户id
-     * @param kaiShi 开始日期时间 大于等于
-     * @param jieShu 结束日期时间 小于
+     * @param kaiShi   开始日期时间 大于等于
+     * @param jieShu   结束日期时间 小于
      */
     @Query("select " +
             "g " +
@@ -75,7 +75,31 @@ public interface GongZuoJiLuRepository extends PagingAndSortingRepository<GongZu
             "join g.yongHu y " +
             "where y.id = :yongHuId " +
             "and g.kaiShi >= :kaiShi " +
-            "and g.kaiShi < :jieShu " +
+            "and g.jieShu < :jieShu " +
             "order by g.xiangMu, g.kaiShi")
     List<GongZuoJiLu> findYongHuGongZuoJiLu(@Param("yongHuId") Long yongHuId, @Param("kaiShi") LocalDateTime kaiShi, @Param("jieShu") LocalDateTime jieShu, Pageable pageable);
+
+    /**
+     * 指定人员的指定时间段工作记录
+     *
+     * @param yongHuId 用户id
+     * @param kaiShi   开始日期时间 大于等于
+     * @param jieShu   结束日期时间 小于
+     */
+    @Query("select count(g) from " +
+            "GongZuoJiLu g " +
+            "join g.yongHu y " +
+            "where y.id = :yongHuId " +
+            "and " +
+            "g.jieShu >= :kaiShi " +
+            "and " +
+            "g.kaiShi <= :jieShu")
+    Long findByOverlapWorkRecords(@Param("yongHuId") Long yongHuId, @Param("kaiShi") LocalDateTime kaiShi, @Param("jieShu") LocalDateTime jieShu);
+
+    /**
+     * 根据备注查找单条工作记录(给测试程序用)
+     *
+     * @param beiZhu 备注
+     */
+    GongZuoJiLu findOneByBeiZhu(String beiZhu);
 }

@@ -69,7 +69,7 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
      */
     public void addChengYuan(YongHu yongHu) {
         // -如果成员已存在, 则抛异常
-        if (jiFeiBiaoZhuns.stream().anyMatch(item -> item.getYongHu().getId() == yongHu.getId())) {
+        if (jiFeiBiaoZhuns.stream().anyMatch(item -> item.getYongHu().getId().compareTo(yongHu.getId()) == 0)) {
             throw new PPBusinessException("此用户已是此项目成员, 不能添加!");
         }
         // -
@@ -89,7 +89,7 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
      * @param yongHu 待移除成员用户
      */
     public void removeChengYuan(YongHu yongHu) {
-        List<JiFeiBiaoZhun> result = jiFeiBiaoZhuns.stream().filter(item -> item.getYongHu().getId() == yongHu.getId()).collect(Collectors.toList());
+        List<JiFeiBiaoZhun> result = jiFeiBiaoZhuns.stream().filter(item -> item.getYongHu().getId().compareTo(yongHu.getId()) == 0).collect(Collectors.toList());
 
         // -如果成员不存在, 则抛异常
         if (result.isEmpty()) {
@@ -114,7 +114,7 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
         Optional<JiFeiBiaoZhun> existRecord = jiFeiBiaoZhuns
                 .stream()
                 .filter(
-                        item -> (item.getYongHu().getId() == jiFeiBiaoZhun.getYongHu().getId() && item.getKaiShi().isEqual(jiFeiBiaoZhun.getKaiShi()))
+                        item -> (item.getYongHu().getId().compareTo(jiFeiBiaoZhun.getYongHu().getId()) == 0 && item.getKaiShi().isEqual(jiFeiBiaoZhun.getKaiShi()))
                 ).findFirst();
 
         if (existRecord.isPresent()) {
@@ -138,7 +138,7 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
         Optional<JiFeiBiaoZhun> existRecord = jiFeiBiaoZhuns
                 .stream()
                 .filter(
-                        item -> (item.getYongHu().getId() == yongHu.getId() && item.getKaiShi().isEqual(kaiShi))
+                        item -> (item.getYongHu().getId().compareTo(yongHu.getId()) == 0  && item.getKaiShi().isEqual(kaiShi))
                 ).findFirst();
 
         if (existRecord.isPresent()) {
