@@ -8,6 +8,7 @@ import com.example.timesheet.repository.GongSiRepository;
 import com.example.timesheet.repository.GongZuoJiLuRepository;
 import com.example.timesheet.repository.XiangMuRepository;
 import com.example.timesheet.repository.YongHuRepository;
+import com.example.timesheet.service.H2Service;
 import com.example.timesheet.service.MainService;
 import com.example.timesheet.util.PPUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,9 @@ import java.util.Arrays;
 @Component
 @Transactional
 public class CommandLineRunnerBean implements CommandLineRunner {
+    @Autowired
+    private H2Service h2Service;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -50,6 +54,6 @@ public class CommandLineRunnerBean implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        PPUtil.dump("emptyDB");
+        h2Service.dump("emptyDB");
     }
 }

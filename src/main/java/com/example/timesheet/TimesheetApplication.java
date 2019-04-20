@@ -11,8 +11,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import org.h2.tools.Server;
 
 import javax.annotation.PostConstruct;
+import java.sql.SQLException;
 import java.util.TimeZone;
 
 @Slf4j
@@ -26,7 +28,14 @@ public class TimesheetApplication {
     }
 
     @PostConstruct
-    void started() {
+    void started()
+    {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
+
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public Server inMemoryH2DatabaseaServer() throws SQLException {
+        return Server.createTcpServer(
+                "-tcp", "-tcpAllowOthers", "-tcpPort", "9090");
     }
 }

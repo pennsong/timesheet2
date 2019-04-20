@@ -1,6 +1,7 @@
 package com.example.timesheet;
 
 import com.example.timesheet.model.*;
+import com.example.timesheet.service.H2Service;
 import com.example.timesheet.util.PPJson;
 import com.example.timesheet.util.PPUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +39,7 @@ public class Admin成功 extends TimesheetApplicationTests {
         if (!init) {
             init = true;
 
-            PPUtil.restore("emptyDB");
+            h2Service.restore("emptyDB");
 
             ResponseEntity<String> response = request(
                     "/test/adminChengGong",
@@ -46,7 +48,7 @@ public class Admin成功 extends TimesheetApplicationTests {
             );
             checkCode(response, PPOK);
 
-            PPUtil.dump("adminChengGong");
+            h2Service.dump("adminChengGong");
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -57,25 +59,27 @@ public class Admin成功 extends TimesheetApplicationTests {
                 cookies.put("y" + i, cookie);
             }
         } else {
-            PPUtil.restore("adminChengGong");
+            h2Service.restore("adminChengGong");
         }
     }
 
     @Test
     public void 新建用户() {
         ResponseEntity<String> response = request(
-                "/admin/createGongSi",
+                "/admin/createYongHu",
                 HttpMethod.POST,
                 "Admin",
-                "mingCheng, gt1"
+                "yongHuMing, yt1",
+                "password, 1234",
+                "xiaoShiFeiYong, 500"
         );
         checkCode(response, PPOK);
 
         // 清空当前repository以从数据库获取最新数据
         entityManager.clear();
 
-        GongSi gongSi = gongSiRepository.findOneByMingCheng("gt1");
-        Assert.assertNotNull(gongSi);
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing("yt1");
+        Assert.assertNotNull(yongHu);
     }
 
     @Test

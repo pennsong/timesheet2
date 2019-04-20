@@ -23,7 +23,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
         if (!init) {
             init = true;
 
-            PPUtil.restore("emptyDB");
+            h2Service.restore("emptyDB");
 
             ResponseEntity<String> response = request(
                     "/test/adminFuZaChengGong",
@@ -32,7 +32,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
             );
             checkCode(response, PPOK);
 
-            PPUtil.dump("adminFuZaChengGong");
+            h2Service.dump("adminFuZaChengGong");
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -43,7 +43,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
                 cookies.put("y" + i, cookie);
             }
         } else {
-            PPUtil.restore("adminFuZaChengGong");
+            h2Service.restore("adminFuZaChengGong");
         }
     }
 
