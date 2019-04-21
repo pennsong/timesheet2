@@ -5,12 +5,14 @@ import com.example.timesheet.model.XiangMu;
 import com.example.timesheet.model.YongHu;
 import com.example.timesheet.util.PPJson;
 import com.example.timesheet.util.PPUtil;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -102,7 +104,6 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
     }
 
 
-
     @Test
     public void 添加项目计费标准_$设置公司结算日_添加结算日后的计费标准_添加同一天的计费标准() {
         XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
@@ -110,7 +111,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
 
         // 设置公司结算日
-        ResponseEntity<String>  response = request(
+        ResponseEntity<String> response = request(
                 "/admin/setGongSiJieSuanRi",
                 HttpMethod.POST,
                 "Admin",
@@ -206,5 +207,331 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
 
     }
 
-// todo 复杂报告
+    /**
+     * 生成报告_复杂操作后的报告
+     * <p>
+     * 新建用户yt1 500
+     * <p>
+     * 新建用户yt2 500
+     * <p>
+     * 新建公司gt1
+     * <p>
+     * 新建项目gt1x1
+     * <p>
+     * 新建项目gt1x2
+     * <p>
+     * 添加成员yt1 gt1x1
+     * <p>
+     * 添加成员yt2 gt1x1
+     * <p>
+     * 添加成员yt1 gt1x2
+     * <p>
+     * 添加成员yt2 gt1x2
+     * <p>
+     * 导入工作记录:<br>
+     * yt1 gt1x1 2000-01-01T10:00 2000-01-02T10:00 testNote1
+     * yt2 gt1x1 2000-01-01T10:00 2000-01-02T10:00 testNote2
+     * yt1 gt1x2 2000-01-02T10:01 2000-01-02T11:01 testNote3
+     * yt2 gt1x2 2000-01-02T10:01 2000-01-02T11:01 testNote4
+     * <p>
+     * 添加支付:<br>
+     * gt1 2000-01-03 2000.01
+     * gt1 2000-01-03 999.99
+     * <p>
+     * 添加计费标准:<br>
+     * gt1x1 yt1 2000-01-10 2000
+     * gt1x1 yt1 2000-01-04 1000
+     * <p>
+     * 导入工作记录:<br>
+     * yt1 gt1x1 2000-01-04T10:00 2000-01-05T10:00 testNote5
+     * yt2 gt1x1 2000-01-04T10:00 2000-01-05T10:00 testNote6
+     * <p>
+     * 添加计费标准:<br>
+     * gt1x1 yt2 2000-01-04 1000
+     * <p>
+     * 添加支付:<br>
+     * gt1 2000-01-05 2000
+     * <p>
+     * 生成gt1 2000-01-02 到 2000-01-04的报告
+     * <p>
+     * 确认<br>
+     * 期初balance: -15000
+     * 期末balance: -36000
+     */
+    @Test
+    public void 生成报告_复杂操作后的报告() throws JSONException {
+        // 新建用户yt1 500
+        ResponseEntity<String> response = request(
+                "/admin/createYongHu",
+                HttpMethod.POST,
+                "Admin",
+                "yongHuMing, yt1",
+                "kaiShi, 1900-01-01",
+                "miMa, 1234",
+                "xiaoShiFeiYong, 500"
+        );
+        checkCode(response, PPOK);
+        Long yt1Id = ppResponse.gainId(response);
+
+        // 新建用户yt2 500
+        response = request(
+                "/admin/createYongHu",
+                HttpMethod.POST,
+                "Admin",
+                "yongHuMing, yt2",
+                "kaiShi, 1900-01-01",
+                "miMa, 1234",
+                "xiaoShiFeiYong, 500"
+        );
+        checkCode(response, PPOK);
+        Long yt2Id = ppResponse.gainId(response);
+
+        // 新建公司gt1
+        response = request(
+                "/admin/createGongSi",
+                HttpMethod.POST,
+                "Admin",
+                "mingCheng, gt1"
+        );
+        checkCode(response, PPOK);
+        Long gt1Id = ppResponse.gainId(response);
+
+        // 新建项目gt1x1
+        response = request(
+                "/admin/createXiangMu",
+                HttpMethod.POST,
+                "Admin",
+                "mingCheng, gt1x1",
+                "gongSiId," + gt1Id
+        );
+        checkCode(response, PPOK);
+        Long gt1x1Id = ppResponse.gainId(response);
+
+        // 新建项目gt1x2
+        response = request(
+                "/admin/createXiangMu",
+                HttpMethod.POST,
+                "Admin",
+                "mingCheng, gt1x2",
+                "gongSiId," + gt1Id
+        );
+        checkCode(response, PPOK);
+        Long gt1x2Id = ppResponse.gainId(response);
+
+        // 添加成员yt1 gt1x1
+        response = request(
+                "/admin/addXiangMuChengYuan",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + gt1x1Id,
+                "yongHuId," + yt1Id
+        );
+        checkCode(response, PPOK);
+
+        // 添加成员yt2 gt1x1
+        response = request(
+                "/admin/addXiangMuChengYuan",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + gt1x1Id,
+                "yongHuId," + yt2Id
+        );
+        checkCode(response, PPOK);
+
+        // 添加成员yt1 gt1x2
+        response = request(
+                "/admin/addXiangMuChengYuan",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + gt1x2Id,
+                "yongHuId," + yt1Id
+        );
+        checkCode(response, PPOK);
+
+        // 添加成员yt2 gt1x2
+        response = request(
+                "/admin/addXiangMuChengYuan",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + gt1x2Id,
+                "yongHuId," + yt2Id
+        );
+        checkCode(response, PPOK);
+
+        // 导入工作记录
+        JSONArray jsonArray = new JSONArray();
+
+        // yt1 gt1x1 2000-01-01T10:00 2000-01-02T10:00 testNote1
+        PPJson gongZuoJiLu = new PPJson();
+        gongZuoJiLu.put("yongHuMing", "yt1");
+        gongZuoJiLu.put("xiangMuMingCheng", "gt1x1");
+        gongZuoJiLu.put("kaiShi", "2000-01-01T10:00");
+        gongZuoJiLu.put("jieShu", "2000-01-02T10:00");
+        gongZuoJiLu.put("beiZhu", "testNote1");
+        jsonArray.put(gongZuoJiLu);
+
+        // yt2 gt1x1 2000-01-01T10:00 2000-01-02T10:00 testNote2
+        gongZuoJiLu = new PPJson();
+        gongZuoJiLu.put("yongHuMing", "yt2");
+        gongZuoJiLu.put("xiangMuMingCheng", "gt1x1");
+        gongZuoJiLu.put("kaiShi", "2000-01-01T10:00");
+        gongZuoJiLu.put("jieShu", "2000-01-02T10:00");
+        gongZuoJiLu.put("beiZhu", "testNote2");
+        jsonArray.put(gongZuoJiLu);
+
+        // yt1 gt1x2 2000-01-02T10:01 2000-01-02T11:01 testNote3
+        gongZuoJiLu = new PPJson();
+        gongZuoJiLu.put("yongHuMing", "yt1");
+        gongZuoJiLu.put("xiangMuMingCheng", "gt1x2");
+        gongZuoJiLu.put("kaiShi", "2000-01-02T10:01");
+        gongZuoJiLu.put("jieShu", "2000-01-02T11:01");
+        gongZuoJiLu.put("beiZhu", "testNote3");
+        jsonArray.put(gongZuoJiLu);
+
+        // yt2 gt1x2 2000-01-02T10:01 2000-01-02T11:01 testNote4
+        gongZuoJiLu = new PPJson();
+        gongZuoJiLu.put("yongHuMing", "yt2");
+        gongZuoJiLu.put("xiangMuMingCheng", "gt1x2");
+        gongZuoJiLu.put("kaiShi", "2000-01-02T10:01");
+        gongZuoJiLu.put("jieShu", "2000-01-02T11:01");
+        gongZuoJiLu.put("beiZhu", "testNote4");
+        jsonArray.put(gongZuoJiLu);
+
+        PPJson ppJson = new PPJson();
+        ppJson.put("data", jsonArray);
+
+        response = request(
+                "/admin/importYongHuGongZuoJiLu",
+                HttpMethod.POST,
+                "Admin",
+                ppJson
+        );
+        checkCode(response, PPOK);
+
+        // 添加支付
+        // gt1 2000-01-03 2000.01
+        response = request(
+                "/admin/createZhiFu",
+                HttpMethod.POST,
+                "Admin",
+                "gongSiMingCheng, gt1",
+                "riQi, 2000-01-03",
+                "jinE, 2000.01",
+                "beiZhu, testPayment"
+        );
+        checkCode(response, PPOK);
+
+        // gt1 2000-01-03 999.99
+        response = request(
+                "/admin/createZhiFu",
+                HttpMethod.POST,
+                "Admin",
+                "gongSiMingCheng, gt1",
+                "riQi, 2000-01-03",
+                "jinE, 999.99",
+                "beiZhu, testPayment"
+        );
+        checkCode(response, PPOK);
+
+        // 添加计费标准
+        // gt1x1 yt1 2000-01-10 2000
+        response = request(
+                "/admin/addXiangMuJiFeiBiaoZhun",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + gt1x1Id,
+                "yongHuId," + yt1Id,
+                "kaiShi, 2000-01-10",
+                "xiaoShiFeiYong, 2000"
+        );
+        checkCode(response, PPOK);
+
+        // gt1x1 yt1 2000-01-04 1000
+        response = request(
+                "/admin/addXiangMuJiFeiBiaoZhun",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + gt1x1Id,
+                "yongHuId," + yt1Id,
+                "kaiShi, 2000-01-04",
+                "xiaoShiFeiYong, 1000"
+        );
+        checkCode(response, PPOK);
+
+        // 导入工作记录
+        jsonArray = new JSONArray();
+
+        // yt1 gt1x1 2000-01-04T10:00 2000-01-05T10:00 testNote5
+        gongZuoJiLu = new PPJson();
+        gongZuoJiLu.put("yongHuMing", "yt1");
+        gongZuoJiLu.put("xiangMuMingCheng", "gt1x1");
+        gongZuoJiLu.put("kaiShi", "2000-01-04T10:00");
+        gongZuoJiLu.put("jieShu", "2000-01-05T10:00");
+        gongZuoJiLu.put("beiZhu", "testNote5");
+        jsonArray.put(gongZuoJiLu);
+
+        // yt2 gt1x1 2000-01-04T10:00 2000-01-05T10:00 testNote6
+        gongZuoJiLu = new PPJson();
+        gongZuoJiLu.put("yongHuMing", "yt2");
+        gongZuoJiLu.put("xiangMuMingCheng", "gt1x1");
+        gongZuoJiLu.put("kaiShi", "2000-01-04T10:00");
+        gongZuoJiLu.put("jieShu", "2000-01-05T10:00");
+        gongZuoJiLu.put("beiZhu", "testNote6");
+        jsonArray.put(gongZuoJiLu);
+
+        ppJson = new PPJson();
+        ppJson.put("data", jsonArray);
+
+        response = request(
+                "/admin/importYongHuGongZuoJiLu",
+                HttpMethod.POST,
+                "Admin",
+                ppJson
+        );
+        checkCode(response, PPOK);
+
+        // 添加计费标准
+        // gt1x1 yt2 2000-01-04 1000
+        response = request(
+                "/admin/addXiangMuJiFeiBiaoZhun",
+                HttpMethod.POST,
+                "Admin",
+                "xiangMuId," + gt1x1Id,
+                "yongHuId," + yt2Id,
+                "kaiShi, 2000-01-04",
+                "xiaoShiFeiYong, 1000"
+        );
+        checkCode(response, PPOK);
+
+        // 添加支付
+        // gt1 2000-01-05 2000
+        response = request(
+                "/admin/createZhiFu",
+                HttpMethod.POST,
+                "Admin",
+                "gongSiMingCheng, gt1",
+                "riQi, 2000-01-05",
+                "jinE, 2000",
+                "beiZhu, testPayment"
+        );
+        checkCode(response, PPOK);
+
+        // 生成gt1 2000-01-02 到 2000-01-04的报告
+        response = request(
+                "/admin/generateBaoGao",
+                HttpMethod.POST,
+                "Admin",
+                "gongSiId, " + gt1Id,
+                "kaiShi, 2000-01-02",
+                "jieShu, 2000-01-04"
+        );
+        checkCode(response, PPOK);
+
+        JSONObject jsonObject = new JSONObject(response.getBody());
+        double qiChuBalance = jsonObject.getJSONObject("data").getDouble("期初Balance");
+        double qiMoBalance = jsonObject.getJSONObject("data").getDouble("期末Balance");
+
+        Assert.assertTrue(Math.abs((-14000) - qiChuBalance) < 1);
+        Assert.assertTrue(Math.abs((-50000) - qiMoBalance) < 1);
+    }
 }

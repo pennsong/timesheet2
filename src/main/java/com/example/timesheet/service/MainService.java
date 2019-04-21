@@ -472,12 +472,13 @@ public class MainService {
                     )
 
             ) {
-                jsonObject.put("开始:", gongZuoJiLu.getKaiShi());
-                jsonObject.put("结束:", gongZuoJiLu.getJieShu());
-                jsonObject.put("项目:", gongZuoJiLu.getXiangMu().getMingCheng());
-                jsonObject.put("人员:", gongZuoJiLu.getYongHu().getYongHuMing());
-                jsonObject.put("耗时:", secondCost.divide(new BigDecimal("" + 3600), MathContext.DECIMAL128));
-                jsonObject.put("费用:", cost);
+                jsonObject.put("开始", gongZuoJiLu.getKaiShi());
+                jsonObject.put("结束", gongZuoJiLu.getJieShu());
+                jsonObject.put("项目", gongZuoJiLu.getXiangMu().getMingCheng());
+                jsonObject.put("人员", gongZuoJiLu.getYongHu().getYongHuMing());
+                jsonObject.put("耗时", (new BigDecimal("" + duration.getSeconds())).divide(new BigDecimal("" + 3600), MathContext.DECIMAL128));
+                jsonObject.put("小时费用", xiaoShiFeiYong);
+                jsonObject.put("费用", cost);
 
                 gongZuoJiLusJsonArray.put(jsonObject);
             }
@@ -492,9 +493,9 @@ public class MainService {
         for (ZhiFu zhifu : zhiFus) {
             JSONObject jsonObject = new JSONObject();
 
-            jsonObject.put("日期:", zhifu.getRiQi());
-            jsonObject.put("金额:", zhifu.getJingE());
-            jsonObject.put("备注:", zhifu.getBeiZhu());
+            jsonObject.put("日期", zhifu.getRiQi());
+            jsonObject.put("金额", zhifu.getJingE());
+            jsonObject.put("备注", zhifu.getBeiZhu());
 
             zhiFusJsonArray.put(jsonObject);
         }
@@ -512,12 +513,12 @@ public class MainService {
         // --
 
         JSONObject reportJsonObject = new JSONObject();
-        reportJsonObject.put("开始:", kaiShi);
-        reportJsonObject.put("结束:", jieShu);
-        reportJsonObject.put("期初Balance:", kaiShiBalance);
-        reportJsonObject.put("期末Balance:", jieShuBalance);
-        reportJsonObject.put("消费记录:", gongZuoJiLusJsonArray);
-        reportJsonObject.put("充值记录:", zhiFusJsonArray);
+        reportJsonObject.put("开始", kaiShi);
+        reportJsonObject.put("结束", jieShu);
+        reportJsonObject.put("期初Balance", kaiShiBalance);
+        reportJsonObject.put("期末Balance", jieShuBalance);
+        reportJsonObject.put("消费记录", gongZuoJiLusJsonArray);
+        reportJsonObject.put("充值记录", zhiFusJsonArray);
 
         return reportJsonObject;
     }

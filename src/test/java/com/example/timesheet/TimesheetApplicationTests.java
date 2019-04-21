@@ -98,55 +98,6 @@ public class TimesheetApplicationTests {
     @Autowired
     protected PasswordEncoder passwordEncoder;
 
-    // todo 测试下是否要控制同步synchronized
-//    @Before
-//    public void before() throws IOException {
-//        if (!init) {
-//            init = true;
-//
-//            // 获取登录cookies
-//            String cookie = login("Admin", "1234");
-//            cookies.put("Admin", cookie);
-//
-//            for (int i = 1; i <= 3; i++) {
-//                cookie = login("y" + i, "1234");
-//                cookies.put("y" + i, cookie);
-//            }
-//
-//            // dump当前数据库到dump.sql
-////            jdbcTemplate.execute("script to 'src/test/resources/dump.sql'");
-//        } else {
-////            // drop序列生成器
-////            jdbcTemplate.execute("DROP SEQUENCE HIBERNATE_SEQUENCE;");
-////
-////            // -DROP所有表
-////            List<Map<String, Object>> tables = jdbcTemplate.queryForList("SHOW TABLES");
-////            tables.stream().forEach(item -> jdbcTemplate.execute("DROP TABLE " + item.get("TABLE_NAME")));
-////            // -
-////
-////        // -读取dump.sql中的sql, 依次执行
-////        FileReader fr = new FileReader(new File("src/test/resources/dump.sql"));
-////        BufferedReader br = new BufferedReader(fr);
-////        String lineStr;
-////        StringBuilder stringBuilder = new StringBuilder();
-////        while ((lineStr = br.readLine()) != null) {
-////            if (lineStr.startsWith("--")) {
-////                continue;
-////            }
-////            stringBuilder.append(lineStr);
-////        }
-////        br.close();
-////
-////        String[] sqlCommands = stringBuilder.toString().split(";");
-////
-////        for (String item : sqlCommands) {
-////            jdbcTemplate.execute(item);
-////        }
-////        log.info("pptest restored");
-////        // -
-//        }
-//    }
-
     // todo 换成restful的登录
     protected String login(String yongHuMing, String miMa) {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();

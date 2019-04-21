@@ -71,12 +71,12 @@ public class MainController {
     @RequestMapping(value = "/admin/createYongHu", method = RequestMethod.POST)
     @DtoValid
     public String createYongHu(@RequestBody CreateYongHuDto dto) {
-        YongHu yongHu = mainService.createYongHu(dto.yongHuMing, dto.password, dto.xiaoShiFeiYong);
+        YongHu yongHu = mainService.createYongHu(dto.yongHuMing, dto.miMa, dto.xiaoShiFeiYong);
 
         return ppResponse.response(yongHu);
     }
 
-    @ApiModel(description = "创建用户Dto")
+    @ApiModel(description = "新建用户Dto")
     @Data
     public static class CreateYongHuDto {
         @ApiModelProperty(notes = "用户名", required = true, position = 1)
@@ -87,7 +87,7 @@ public class MainController {
         @ApiModelProperty(notes = "密码", required = true, position = 2)
         @NotNull
         @Size(min = 4)
-        String password;
+        String miMa;
 
         @ApiModelProperty(notes = "小时费用", required = true, position = 3)
         @NotNull
