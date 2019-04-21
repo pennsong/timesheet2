@@ -13,9 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -51,7 +53,7 @@ import java.util.Map;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional(isolation = Isolation.READ_COMMITTED)
-public class TimesheetApplicationTests {
+public abstract class TimesheetApplicationTests {
     public static final String PPOK = "1";
     public static final String PPBusinessExceptionCode = "1000";
     public static final String PPDeleteReferenceExceptionCode = "2000";
@@ -59,6 +61,12 @@ public class TimesheetApplicationTests {
     public static final String PPReferencedExceptionCode = "3500";
     public static final String PPValidateExceptionCode = "4000";
     public static final String PPItemNotExistExceptionCode = "5000";
+
+    public static final int NOT_START = 0;
+    public static final int INIT_DATA_DONE = 1;
+    public static final int LOGIN_COOKIE_DONE = 2;
+
+    public static boolean emptyDBDumped = false;
 
     protected static Map<String, String> cookies = new HashMap();
 
@@ -157,8 +165,5 @@ public class TimesheetApplicationTests {
         return request(url, HttpMethod.POST, yongHuMing, requestBodyFieldValues);
     }
 
-    @Test
-    public void foo() {
-
-    }
+    public abstract void initData();
 }

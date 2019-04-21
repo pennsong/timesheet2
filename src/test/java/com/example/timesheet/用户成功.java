@@ -9,14 +9,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.springframework.http.*;
+import org.springframework.test.annotation.Commit;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
@@ -24,37 +28,135 @@ import static com.example.timesheet.util.PPUtil.MAX_DATE;
 import static com.example.timesheet.util.PPUtil.MIN_DATE;
 
 @Slf4j
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class 用户成功 extends TimesheetApplicationTests {
-    private static boolean init = false;
+    private static int step = NOT_START;
+
+    private static String dumpFileName = "yongHuChengGong";
+
+    @Override
+    public void initData() {
+        // 如没有admin则新建admin
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
+        if (yongHu == null) {
+            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), Arrays.asList("ADMIN"));
+            yongHuRepository.save(yongHu1);
+        }
+
+        /*
+        用户
+        y1 2
+        y2 2
+        y3 2
+        */
+        YongHu y1 = mainService.createYongHu("y1", "1234", new BigDecimal("2"));
+        YongHu y2 = mainService.createYongHu("y2", "1234", new BigDecimal("2"));
+        YongHu y3 = mainService.createYongHu("y3", "1234", new BigDecimal("2"));
+
+       /*
+       公司
+       g1
+       g2
+       g3
+       */
+        GongSi g1 = mainService.createGongSi("g1");
+        GongSi g2 = mainService.createGongSi("g2");
+        GongSi g3 = mainService.createGongSi("g3");
+
+        /*
+        项目
+        g1x1 g1
+        [
+            {
+                y1,
+                xiaoShiFeiYong: [
+                    {
+                        MIN_DATE,
+                        2
+                    },
+                    {
+                        2000/1/1,
+                        4
+                    }
+                ],
+                y2,
+                xiaoShiFeiYong: [
+                    {
+                        MIN_DATE,
+                        2
+                    },
+                    {
+                        2000/1/1,
+                        4
+                    }
+                ]
+            }
+        ]
+        g1x2 g1
+        g2x1 g2
+        */
+        XiangMu g1x1 = mainService.createXiangMu("g1x1", g1.getId());
+        XiangMu g1x2 = mainService.createXiangMu("g1x2", g1.getId());
+        XiangMu g2x1 = mainService.createXiangMu("g2x1", g2.getId());
+
+        mainService.addXiangMuChengYuan(g1x1.getId(), y1.getId());
+        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
+
+        mainService.addXiangMuChengYuan(g1x1.getId(), y2.getId());
+        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
+
+        /*
+        支付
+        2000/1/1 g1 100.0 testNote
+        */
+        mainService.createZhiFu(g1.getMingCheng(), LocalDate.of(2000, 1, 1), new BigDecimal("100"), "testNote");
+
+        /*
+        workRecord
+        g1x1 y1 2000/1/1 10:01 11:01 testWorkNote
+        */
+        mainService.createGongZuoJiLu(
+                y1.getYongHuMing(),
+                g1x1.getMingCheng(),
+                LocalDateTime.of(2000, 1, 1, 10, 1),
+                LocalDateTime.of(2000, 1, 1, 11, 1),
+                "testWorkNote"
+        );
+    }
 
     @Before
     public void before() {
-        if (!init) {
-            init = true;
-
+        if (step == NOT_START) {
             h2Service.restore("emptyDB");
-
-            ResponseEntity<String> response = request(
-                    "/test/yongHuChengGong",
-                    HttpMethod.GET,
-                    null
-            );
-            checkCode(response, PPOK);
-
-            h2Service.dump("yongHuChengGong");
-
-            // 获取登录cookies
-            String cookie = login("Admin", "1234");
-            cookies.put("Admin", cookie);
-
-            for (int i = 1; i <= 3; i++) {
-                cookie = login("y" + i, "1234");
-                cookies.put("y" + i, cookie);
-            }
+        } else if (step == INIT_DATA_DONE) {
+            h2Service.dump(dumpFileName);
         } else {
-            h2Service.restore("yongHuChengGong");
+            h2Service.restore(dumpFileName);
         }
     }
+
+    @Test
+    @Commit
+    public void _1initData() {
+        initData();
+        step = INIT_DATA_DONE;
+    }
+
+    @Test
+    public void _2loginCookies() {
+        // 获取登录cookies
+        String cookie = login("Admin", "1234");
+        cookies.put("Admin", cookie);
+
+        for (int i = 1; i <= 3; i++) {
+            cookie = login("y" + i, "1234");
+            cookies.put("y" + i, cookie);
+        }
+
+        step = LOGIN_COOKIE_DONE;
+    }
+
+    // 正式测试案例开始
 
     @Test
     public void 设置当前用户密码() {

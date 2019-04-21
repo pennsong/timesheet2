@@ -18,6 +18,7 @@ public class H2Service {
     public void restore(String name) {
         jdbcTemplate.execute("DROP ALL OBJECTS");
         jdbcTemplate.execute("RUNSCRIPT FROM 'src/test/resources/" + name + ".sql'");
+        log.info("pptest restored");
     }
 
 //    public void dump(String name) {
