@@ -55,5 +55,11 @@ public class CommandLineRunnerBean implements CommandLineRunner {
     @Override
     public void run(String... args) {
         h2Service.dump("emptyDB");
+        // 如没有admin则新建admin
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
+        if (yongHu == null) {
+            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), Arrays.asList("ADMIN"));
+            yongHuRepository.save(yongHu1);
+        }
     }
 }

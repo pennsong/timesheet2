@@ -53,18 +53,6 @@ public class MainController {
     @Autowired
     private YongHuRepository yongHuRepository;
 
-    @RequestMapping("/homepage")
-    public String homepage() {
-
-        return "homepage";
-    }
-
-    @RequestMapping("/test")
-    public Iterable<YongHu> test(Principal principal) {
-
-        return yongHuRepository.findAll();
-    }
-
     // -Admin
 
     @ApiOperation(value = "新建用户", tags = {"Admin", "用户"})
