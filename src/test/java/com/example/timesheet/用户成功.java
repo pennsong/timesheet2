@@ -176,7 +176,7 @@ public class 用户成功 extends TimesheetApplicationTests {
         map.add("password", "5678");
 
         HttpEntity<String> response1 = restTemplate.postForEntity("/login", map, String.class);
-        Assert.assertEquals(true, response1.toString().contains("homepage"));
+        Assert.assertEquals(HttpStatus.OK, ((ResponseEntity<String>) response1).getStatusCode());
     }
 
     @Test
