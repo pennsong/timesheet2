@@ -1,5 +1,7 @@
 package com.example.timesheet.config;
 
+import com.example.timesheet.util.PPJson;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -24,12 +26,14 @@ public class MySavedRequestAwareAuthenticationSuccessHandler extends SimpleUrlAu
 
         if (savedRequest == null) {
             clearAuthenticationAttributes(request);
+            setResponse(response);
             return;
         }
         final String targetUrlParameter = getTargetUrlParameter();
         if (isAlwaysUseDefaultTargetUrl() || (targetUrlParameter != null && StringUtils.hasText(request.getParameter(targetUrlParameter)))) {
             requestCache.removeRequest(request, response);
             clearAuthenticationAttributes(request);
+            setResponse(response);
             return;
         }
 
@@ -38,5 +42,13 @@ public class MySavedRequestAwareAuthenticationSuccessHandler extends SimpleUrlAu
 
     public void setRequestCache(final RequestCache requestCache) {
         this.requestCache = requestCache;
+    }
+
+    private void setResponse(HttpServletResponse response) throws IOException {
+        PPJson ppJson = new PPJson();
+        ppJson.put("code", "1");
+        response.setCharacterEncoding("utf-8");
+        response.getWriter().print(ppJson.toString());
+        response.setStatus(HttpStatus.OK.value());
     }
 }

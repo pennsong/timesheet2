@@ -16,6 +16,8 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -382,6 +384,54 @@ public class MainController {
         mainService.deleteZhiFu(id);
 
         return ppResponse.response("ok");
+    }
+
+    // todo 测试案例
+    @ApiOperation(value = "查询工作记录", tags = {"Admin", "支付"})
+    @RequestMapping(value = "/admin/queryGongZuoJiLu", method = RequestMethod.GET)
+    @DtoValid
+    public String queryGongZuoJiLu(AdminQueryGongZuoJiLuDto dto) {
+        if (dto.kaiShi == null) {
+            dto.kaiShi = MIN_DATE;
+        }
+
+        if (dto.jieShu == null) {
+            dto.jieShu = MAX_DATE;
+        }
+
+        if (dto.size == null) {
+            dto.size = 50;
+        }
+
+        if (dto.page == null) {
+            dto.page = 0;
+        }
+
+        List<GongZuoJiLu> gongZuoJiLus = mainService.queryGongZuoJiLu(dto.yongHuId, dto.gongSiId, dto.kaiShi.atStartOfDay(), dto.jieShu.plusDays(1).atStartOfDay(), dto.size, dto.page);
+
+        return ppResponse.response(gongZuoJiLus);
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Data
+    public static class AdminQueryGongZuoJiLuDto {
+        Long gongSiId;
+
+        Long yongHuId;
+
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate kaiShi;
+
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+        LocalDate jieShu;
+
+        @Min(0)
+        @Max(200)
+        Integer size;
+
+        @Min(0)
+        Integer page;
     }
 
     @ApiOperation(value = "生成报告", notes = "成功生成报告后, 把对应公司的结算日设置为报告结束日期", tags = {"Admin", "报告"})

@@ -13,10 +13,7 @@ import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -66,12 +63,23 @@ public class GongZuoJiLu extends PPEntityTypeValidatableAbstract {
         return xiangMu.getMingCheng();
     }
 
+    public String getGongSi_mingCheng() {
+        return xiangMu.getGongSi().getMingCheng();
+    }
+
     /**
      * 工作内容
      */
     @NotBlank
     private String beiZhu;
 
+    /**
+     * 验证
+     * <p>
+     * <i>
+     * 导入工作记录的结束时间要大于开始时间!
+     * </i>
+     */
     @Override
     public void validate() {
         // 在按天拆分的时候, 开始时间有可能等于结束时间(2000-01-01T00:00 TO 2000-01-01T00:00)

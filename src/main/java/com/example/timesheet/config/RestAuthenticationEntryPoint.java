@@ -1,6 +1,7 @@
 package com.example.timesheet.config;
 
 import com.example.timesheet.util.PPJson;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public final class RestAuthenticationEntryPoint implements AuthenticationEntryPo
         ppJson.put("message", "未登录或登录失败!");
         response.setCharacterEncoding("utf-8");
         response.getWriter().print(ppJson.toString());
-        response.setStatus(200);
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
 
 //        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
     }

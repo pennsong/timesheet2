@@ -3,6 +3,7 @@ package com.example.timesheet.model;
 import com.example.timesheet.exception.PPBusinessException;
 import com.example.timesheet.util.PPUtil;
 import com.example.timesheet.validator.PPEntityTypeValidatableAbstract;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,7 +42,12 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
      * 公司
      */
     @ManyToOne(optional = false)
+    @JsonIgnore
     private GongSi gongSi;
+
+    public String getGongSi_mingCheng() {
+        return gongSi.getMingCheng();
+    }
 
     /**
      * 计费标准列表
@@ -138,7 +144,7 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
         Optional<JiFeiBiaoZhun> existRecord = jiFeiBiaoZhuns
                 .stream()
                 .filter(
-                        item -> (item.getYongHu().getId().compareTo(yongHu.getId()) == 0  && item.getKaiShi().isEqual(kaiShi))
+                        item -> (item.getYongHu().getId().compareTo(yongHu.getId()) == 0 && item.getKaiShi().isEqual(kaiShi))
                 ).findFirst();
 
         if (existRecord.isPresent()) {

@@ -4,32 +4,40 @@ import com.example.timesheet.exception.PPBusinessException;
 import com.example.timesheet.exception.PPItemNotExistException;
 import com.example.timesheet.model.*;
 import com.example.timesheet.repository.*;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
+import org.javatuples.Pair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Tuple;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
+import javax.persistence.metamodel.EntityType;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
+@Slf4j
 @Service
 @Transactional
 public class MainService {
@@ -47,6 +55,9 @@ public class MainService {
 
     @Autowired
     private ZhiFuRepository zhiFuRepository;
+
+    @PersistenceContext
+    protected EntityManager entityManager;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -264,7 +275,7 @@ public class MainService {
      * 新建工作记录
      * <p>
      * 1) 项目没有用户的计费标准, 抛异常, 不允许添加<br>
-     * 2) 工作记录的时间早于或等于项目所属公司的计算日, 抛异常, 不允许添加<br>
+     * 2) 工作记录的时间早于或等于项目所属公司的结算日, 抛异常, 不允许添加<br>
      * 3) 如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录<br>
      * 4) 如工作记录时间段有重叠, 抛异常, 不允许添加
      *
@@ -415,6 +426,53 @@ public class MainService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("kaiShi").ascending());
 
         return gongZuoJiLuRepository.findYongHuGongZuoJiLu(yongHuId, kaiShi, jieShu, pageable);
+    }
+
+    /**
+     * 查询工作记录
+     * <p>
+     *
+     * @param yongHuId 用户id
+     * @param kaiShi   开始日期(包含)
+     * @param jieShu   结束日期(不包含)
+     */
+    public List<GongZuoJiLu> queryGongZuoJiLu(Long yongHuId, Long gongSiId, LocalDateTime kaiShi, LocalDateTime jieShu, Integer size, Integer page) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("kaiShi").ascending());
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<GongZuoJiLu> c = cb.createQuery(GongZuoJiLu.class);
+        Root<GongZuoJiLu> gongZuoJiLu = c.from(GongZuoJiLu.class);
+
+        Join<XiangMu, GongSi> gongSi = gongZuoJiLu.join(GongZuoJiLu_.xiangMu).join(XiangMu_.gongSi);
+
+        Join<GongZuoJiLu, YongHu> yongHu = gongZuoJiLu.join(GongZuoJiLu_.yongHu);
+
+        Predicate criteria = cb.conjunction();
+
+        if (yongHuId != null) {
+            criteria = cb.and(criteria, cb.equal(yongHu.get(YongHu_.id), yongHuId));
+        }
+
+        if (gongSiId != null) {
+            criteria = cb.and(criteria, cb.equal(gongSi.get(GongSi_.id), gongSiId));
+        }
+
+        criteria = cb.and(criteria, cb.greaterThanOrEqualTo(gongZuoJiLu.get(GongZuoJiLu_.kaiShi), kaiShi));
+
+        criteria = cb.and(criteria, cb.lessThan(gongZuoJiLu.get(GongZuoJiLu_.kaiShi), jieShu));
+
+        c.select(gongZuoJiLu).where(criteria);
+
+        TypedQuery<GongZuoJiLu> query = entityManager.createQuery(c);
+
+        query.setFirstResult(page * size);
+        query.setMaxResults(size);
+
+        return query.getResultList();
+
+//        Page<GongZuoJiLu> result = new PageImpl<GongZuoJiLu>(query.getResultList(), pageable, count);
+
+//        return result;
     }
 
     // -报告
