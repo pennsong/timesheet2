@@ -35,7 +35,7 @@ public class HomeController {
     }
 
     @ApiOperation(value = "测试", notes = "abcdef")
-    @RequestMapping("/all/test")
+    @RequestMapping(value = "/all/test", method = RequestMethod.POST)
     public Test all() {
         return new Test("ab", 1L);
     }

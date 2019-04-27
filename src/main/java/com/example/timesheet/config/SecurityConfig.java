@@ -13,8 +13,13 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -72,7 +77,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin()
                 .successHandler(mySuccessHandler)
-                .failureHandler(myFailureHandler);
+                .failureHandler(myFailureHandler)
+                .and()
+                .logout()
+                .logoutUrl("/perform_logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID");
+
 
         // h2 console
         httpSecurity.headers().frameOptions().disable();
@@ -80,11 +91,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     }
 
+    // todo 把cros搞透
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE"));
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"));
+        configuration.setAllowedHeaders(
+                Arrays.asList(
+                        "Origin",
+                        "Content-Type",
+                        "Access-Control-Allow-Headers"//,
+//                "X-Auth-TOken",
+//                "Accept",
+//                "X-Requested-With",
+//               "Access-Control-Request-Method",
+//                "Access-Control-Request-Headers",
+//                "Authorization"
+                )
+        );
+//        List<String> exposedHeaders = Arrays.asList("x-auth-token", "content-type", "X-Requested-With", "XMLHttpRequest","Authorization");
+//        configuration.setExposedHeaders(exposedHeaders);
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

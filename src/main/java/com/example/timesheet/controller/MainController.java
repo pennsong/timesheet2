@@ -407,7 +407,7 @@ public class MainController {
             dto.page = 0;
         }
 
-        List<GongZuoJiLu> gongZuoJiLus = mainService.queryGongZuoJiLu(dto.yongHuId, dto.gongSiId, dto.kaiShi.atStartOfDay(), dto.jieShu.plusDays(1).atStartOfDay(), dto.size, dto.page);
+        Page<GongZuoJiLu> gongZuoJiLus = mainService.queryGongZuoJiLu(dto.yongHuId, dto.gongSiId, dto.kaiShi.atStartOfDay(), dto.jieShu.plusDays(1).atStartOfDay(), dto.size, dto.page);
 
         return ppResponse.response(gongZuoJiLus);
     }

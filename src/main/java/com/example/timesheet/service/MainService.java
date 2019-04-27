@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import javax.persistence.criteria.*;
 import javax.persistence.metamodel.EntityType;
 import java.math.BigDecimal;
@@ -436,43 +433,58 @@ public class MainService {
      * @param kaiShi   开始日期(包含)
      * @param jieShu   结束日期(不包含)
      */
-    public List<GongZuoJiLu> queryGongZuoJiLu(Long yongHuId, Long gongSiId, LocalDateTime kaiShi, LocalDateTime jieShu, Integer size, Integer page) {
+    public Page<GongZuoJiLu> queryGongZuoJiLu(Long yongHuId, Long gongSiId, LocalDateTime kaiShi, LocalDateTime jieShu, Integer size, Integer page) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("kaiShi").ascending());
 
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<GongZuoJiLu> c = cb.createQuery(GongZuoJiLu.class);
-        Root<GongZuoJiLu> gongZuoJiLu = c.from(GongZuoJiLu.class);
+        StringBuilder selectCount = new StringBuilder("SELECT ");
+        StringBuilder selectItem = new StringBuilder("SELECT ");
+        StringBuilder from = new StringBuilder("FROM ");
+        StringBuilder join = new StringBuilder();
+        StringBuilder where = new StringBuilder("WHERE 1 = 1 ");
+        StringBuilder order = new StringBuilder("ORDER BY ");
 
-        Join<XiangMu, GongSi> gongSi = gongZuoJiLu.join(GongZuoJiLu_.xiangMu).join(XiangMu_.gongSi);
+        Map<String, Object> params = new HashMap();
 
-        Join<GongZuoJiLu, YongHu> yongHu = gongZuoJiLu.join(GongZuoJiLu_.yongHu);
-
-        Predicate criteria = cb.conjunction();
+        from.append("GongZuoJiLu g ");
 
         if (yongHuId != null) {
-            criteria = cb.and(criteria, cb.equal(yongHu.get(YongHu_.id), yongHuId));
+            join.append("join YongHu y ");
+            where.append("AND y.id = :yongHuId ");
+            params.put("yongHuId", yongHuId);
         }
 
         if (gongSiId != null) {
-            criteria = cb.and(criteria, cb.equal(gongSi.get(GongSi_.id), gongSiId));
+            join.append("join XiangMu x ");
+            join.append("join GongSi gs ");
+            where.append("AND gs.id = :gongSiId ");
+            params.put("gongSiId", gongSiId);
         }
 
-        criteria = cb.and(criteria, cb.greaterThanOrEqualTo(gongZuoJiLu.get(GongZuoJiLu_.kaiShi), kaiShi));
+        where.append("AND g.kaiShi >= :kaiShi ");
+        params.put("kaiShi", kaiShi);
 
-        criteria = cb.and(criteria, cb.lessThan(gongZuoJiLu.get(GongZuoJiLu_.kaiShi), jieShu));
+        where.append("AND g.jieShu < :jieShu ");
+        params.put("jieShu", jieShu);
 
-        c.select(gongZuoJiLu).where(criteria);
+        selectCount.append("COUNT(*) ");
+        selectItem.append("g ");
 
-        TypedQuery<GongZuoJiLu> query = entityManager.createQuery(c);
+        order.append("g.kaiShi ");
 
-        query.setFirstResult(page * size);
-        query.setMaxResults(size);
+        Query queryCount = entityManager.createQuery(selectCount.toString() + from.toString() + join.toString() + where.toString());
+        Query queryItem = entityManager.createQuery(selectItem.toString() + from.toString() + join.toString() + where.toString() + order.toString());
+        queryItem.setFirstResult(page * size);
+        queryItem.setMaxResults(size);
 
-        return query.getResultList();
+        for (Map.Entry<String, Object> entry: params.entrySet()) {
+            queryCount.setParameter(entry.getKey(), entry.getValue());
+            queryItem.setParameter(entry.getKey(), entry.getValue());
+        }
 
-//        Page<GongZuoJiLu> result = new PageImpl<GongZuoJiLu>(query.getResultList(), pageable, count);
+        Long count = (Long) queryCount.getResultList().get(0);
+        Page<GongZuoJiLu> result = new PageImpl<GongZuoJiLu>(queryItem.getResultList(), pageable, count);
 
-//        return result;
+        return result;
     }
 
     // -报告
