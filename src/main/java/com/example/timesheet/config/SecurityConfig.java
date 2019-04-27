@@ -4,12 +4,15 @@ import com.example.timesheet.service.PPUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -28,13 +31,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private PPUserDetailsService userDetailsService;
 
     @Autowired
-    private CustomAccessDeniedHandler accessDeniedHandler;
+    private PPAccessDeniedHandler ppAccessDeniedHandler;
 
     @Autowired
-    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-
-    @Autowired
-    private MySavedRequestAwareAuthenticationSuccessHandler mySuccessHandler;
+    private PPAuthenticationEntryPoint ppAuthenticationEntryPoint;
 
     private SimpleUrlAuthenticationFailureHandler myFailureHandler = new SimpleUrlAuthenticationFailureHandler();
 
@@ -61,60 +61,58 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity
-                .cors().and()
-                .csrf().disable()
+        // 关闭csrf验证
+        httpSecurity.csrf().disable()
+                // 对请求进行认证
                 .authorizeRequests()
                 .and()
                 .exceptionHandling()
-                .accessDeniedHandler(accessDeniedHandler)
-                .authenticationEntryPoint(restAuthenticationEntryPoint)
+                .accessDeniedHandler(ppAccessDeniedHandler)
+                .authenticationEntryPoint(ppAuthenticationEntryPoint)
                 .and()
                 .authorizeRequests()
+                // 所有 /login 的POST请求 都放行
+                .antMatchers(HttpMethod.POST, "/login").permitAll()
+                // 添加权限检测
                 .antMatchers("/admin/**").hasAuthority("ADMIN")
-                .antMatchers("/all/test").permitAll()
+                // 所有请求需要身份认证
                 .anyRequest().authenticated()
                 .and()
-                .formLogin()
-                .successHandler(mySuccessHandler)
-                .failureHandler(myFailureHandler)
-                .and()
-                .logout()
-                .logoutUrl("/perform_logout")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID");
-
+                // 添加一个过滤器 所有访问 /login 的请求交给 JWTLoginFilter 来处理 这个类处理所有的JWT相关内容
+                .addFilterBefore(new JWTLoginFilter("/login", authenticationManager()),
+                        UsernamePasswordAuthenticationFilter.class)
+                // 添加一个过滤器验证其他请求的Token是否合法
+                .addFilterBefore(new JWTAuthenticationFilter(),
+                        UsernamePasswordAuthenticationFilter.class);
 
         // h2 console
         httpSecurity.headers().frameOptions().disable();
-
-
     }
 
-    // todo 把cros搞透
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"));
-        configuration.setAllowedHeaders(
-                Arrays.asList(
-                        "Origin",
-                        "Content-Type",
-                        "Access-Control-Allow-Headers"//,
-//                "X-Auth-TOken",
-//                "Accept",
-//                "X-Requested-With",
-//               "Access-Control-Request-Method",
-//                "Access-Control-Request-Headers",
-//                "Authorization"
-                )
-        );
-//        List<String> exposedHeaders = Arrays.asList("x-auth-token", "content-type", "X-Requested-With", "XMLHttpRequest","Authorization");
-//        configuration.setExposedHeaders(exposedHeaders);
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+//    // todo 把cros搞透
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("*"));
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"));
+//        configuration.setAllowedHeaders(
+//                Arrays.asList(
+//                        "Origin",
+//                        "Content-Type",
+//                        "Access-Control-Allow-Headers"//,
+////                "X-Auth-TOken",
+////                "Accept",
+////                "X-Requested-With",
+////               "Access-Control-Request-Method",
+////                "Access-Control-Request-Headers",
+////                "Authorization"
+//                )
+//        );
+////        List<String> exposedHeaders = Arrays.asList("x-auth-token", "content-type", "X-Requested-With", "XMLHttpRequest","Authorization");
+////        configuration.setExposedHeaders(exposedHeaders);
+//        configuration.setAllowCredentials(true);
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 }

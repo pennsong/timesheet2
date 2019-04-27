@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
-public final class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
+public final class PPAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(
@@ -25,7 +25,5 @@ public final class RestAuthenticationEntryPoint implements AuthenticationEntryPo
         response.setCharacterEncoding("utf-8");
         response.getWriter().print(ppJson.toString());
         response.setStatus(HttpStatus.BAD_REQUEST.value());
-
-//        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
     }
 }
