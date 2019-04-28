@@ -9,6 +9,7 @@ import com.example.timesheet.repository.XiangMuRepository;
 import com.example.timesheet.repository.YongHuRepository;
 import com.example.timesheet.service.MainService;
 import com.example.timesheet.service.PPResponse;
+import com.example.timesheet.util.PPJson;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -475,7 +476,7 @@ public class MainController {
     @RequestMapping(value = "/changePassword", method = RequestMethod.POST)
     @DtoValid
     public String changePassword(Authentication authentication, @RequestBody PasswordDto dto) {
-        Long yongHuId = ((YongHu) authentication.getPrincipal()).getId();
+        Long yongHuId = ((PPJson) (authentication.getPrincipal())).getLong("yongHuId");
 
         mainService.changePassword(yongHuId, dto.password);
 
@@ -496,7 +497,7 @@ public class MainController {
     @DtoValid
     public String importGongZuoJiLu(Authentication authentication, @RequestBody ImportGongZuoJiLuDto dto) {
         for (GongZuoJiLuDto item : dto.data) {
-            String yongHuMing = ((YongHu) authentication.getPrincipal()).getYongHuMing();
+            String yongHuMing = ((PPJson) (authentication.getPrincipal())).getString("yongHuMing");
 
             mainService.createGongZuoJiLu(yongHuMing,
                     item.xiangMuMingCheng,
@@ -539,7 +540,7 @@ public class MainController {
     @DtoValid
     public String deleteGongZuoJiLu(Authentication authentication, @PathVariable Long id) {
         GongZuoJiLu gongZuoJiLu = mainService.gainEntityWithExistsChecking(GongZuoJiLu.class, id);
-        String yongHuMing = ((YongHu) authentication.getPrincipal()).getYongHuMing();
+        String yongHuMing = ((PPJson) (authentication.getPrincipal())).getString("yongHuMing");
 
         if (!(gongZuoJiLu.getYongHu().getYongHuMing().equals(yongHuMing))) {
             throw new PPBusinessException("只能删除本人的工作记录!");
@@ -554,7 +555,7 @@ public class MainController {
     @RequestMapping(value = "/queryGongZuoJiLu", method = RequestMethod.POST)
     @DtoValid
     public String queryGongZuoJiLu(Authentication authentication, @RequestBody QueryGongZuoJiLuDto dto) {
-        Long yongHuId = ((YongHu) authentication.getPrincipal()).getId();
+        Long yongHuId = ((PPJson) (authentication.getPrincipal())).getLong("yongHuId");
 
         if (dto.kaiShi == null) {
             dto.kaiShi = MIN_DATE;

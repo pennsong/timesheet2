@@ -49,4 +49,22 @@ public class PPJson extends JSONObject {
             throw new PPValidateException(e.getMessage());
         }
     }
+
+    @Override
+    public long getLong(String s) {
+        try {
+            return super.getLong(s);
+        } catch (Exception e) {
+            throw new PPValidateException(e.getMessage());
+        }
+    }
+
+    @Override
+    public String getString(String s) {
+        try {
+            return super.getString(s);
+        } catch (Exception e) {
+            throw new PPValidateException(e.getMessage());
+        }
+    }
 }

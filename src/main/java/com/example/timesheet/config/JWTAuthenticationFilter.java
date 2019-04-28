@@ -1,5 +1,7 @@
 package com.example.timesheet.config;
 
+import com.example.timesheet.model.YongHu;
+import com.example.timesheet.repository.YongHuRepository;
 import com.example.timesheet.util.PPJson;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -11,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
@@ -22,7 +25,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+@Component
 public class JWTAuthenticationFilter extends GenericFilterBean {
+    @Autowired
+    private YongHuRepository yongHuRepository;
+
     static final long EXPIRATIONTIME = 432_000_000;     // 5天
     static final String SECRET = "P@ssw02d";            // JWT密码
     static final String TOKEN_PREFIX = "Bearer";        // Token前缀
@@ -60,16 +67,22 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
                     // 去掉 Bearer
                     .parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
                     .getBody();
+            // 拿用户id, 用户名
+            Long yongHuId = new Long((String) ("" + claims.get("yongHuId")));
+            String yongHuMing = (String) (claims.get("yongHuMing"));
 
-            // 拿用户名
-            String user = claims.getSubject();
+            PPJson ppJson = new PPJson();
+            ppJson.put("yongHuId", yongHuId);
+            ppJson.put("yongHuMing", yongHuMing);
 
             // 得到 权限（角色）
             List<GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList((String) claims.get("authorities"));
 
+
+
             // 返回验证令牌
-            return user != null ?
-                    new UsernamePasswordAuthenticationToken(user, null, authorities) :
+            return yongHuId != null ?
+                    new UsernamePasswordAuthenticationToken(ppJson, null, authorities) :
                     null;
         }
         return null;

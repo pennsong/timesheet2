@@ -5,7 +5,6 @@ import com.example.timesheet.model.GongZuoJiLu;
 import com.example.timesheet.model.XiangMu;
 import com.example.timesheet.model.YongHu;
 import com.example.timesheet.util.PPJson;
-import com.example.timesheet.util.PPUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.junit.Assert;
@@ -15,21 +14,18 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.springframework.http.*;
 import org.springframework.test.annotation.Commit;
+import org.springframework.test.context.transaction.BeforeTransaction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
-
-import static com.example.timesheet.util.PPUtil.MIN_DATE;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Admin失败 extends TimesheetApplicationTests {
-    private static int step = NOT_START;
+    private static boolean init = false;
 
     private static String dumpFileName = "adminShiBai";
 
@@ -123,36 +119,24 @@ public class Admin失败 extends TimesheetApplicationTests {
         );
     }
 
-    @Before
-    public void before() {
-        if (step == NOT_START) {
+    @BeforeTransaction
+    void bt() {
+        if (!init) {
+            init = true;
             h2Service.restore("emptyDB");
-        } else if (step == INIT_DATA_DONE) {
-            h2Service.dump(dumpFileName);
+            initData();
+
+            // 获取登录cookies
+            String cookie = login("Admin", "1234");
+            jwts.put("Admin", cookie);
+
+            for (int i = 1; i <= 3; i++) {
+                cookie = login("y" + i, "1234");
+                jwts.put("y" + i, cookie);
+            }
         } else {
             h2Service.restore(dumpFileName);
         }
-    }
-
-    @Test
-    @Commit
-    public void _1initData() {
-        initData();
-        step = INIT_DATA_DONE;
-    }
-
-    @Test
-    public void _2loginCookies() {
-        // 获取登录cookies
-        String cookie = login("Admin", "1234");
-        cookies.put("Admin", cookie);
-
-        for (int i = 1; i <= 3; i++) {
-            cookie = login("y" + i, "1234");
-            cookies.put("y" + i, cookie);
-        }
-
-        step = LOGIN_COOKIE_DONE;
     }
 
     // 正式测试案例开始

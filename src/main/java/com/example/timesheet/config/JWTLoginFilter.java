@@ -1,10 +1,12 @@
 package com.example.timesheet.config;
 
 import com.example.timesheet.exception.PPValidateException;
+import com.example.timesheet.model.YongHu;
 import com.example.timesheet.util.PPJson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +24,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+@Slf4j
 public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
     static final long EXPIRATIONTIME = 432_000_000;     // 5天
     static final String SECRET = "P@ssw02d";            // JWT密码
@@ -42,6 +47,8 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
         // JSON反序列化成 AccountCredentials
         AccountCredentials creds = new ObjectMapper().readValue(req.getInputStream(), AccountCredentials.class);
 
+//        log.info("pptest creds:" + creds.getUsername() + ", " + creds.getPassword());
+
         // 返回一个验证令牌
         return getAuthenticationManager().authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -56,7 +63,7 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
             HttpServletRequest req,
             HttpServletResponse res, FilterChain chain,
             Authentication auth) {
-        addAuthentication(res, auth.getName());
+        addAuthentication(res, ((YongHu) auth.getPrincipal()));
     }
 
 
@@ -72,14 +79,15 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
     }
 
-    private void addAuthentication(HttpServletResponse response, String username) {
+    private void addAuthentication(HttpServletResponse response, YongHu yongHu) {
         // 生成JWT
         String JWT = Jwts.builder()
-                // 保存权限（角色）
-                .claim("authorities", "ADMIN")
+//                // 保存权限（角色）
+                .claim("authorities", String.join(",", yongHu.getRoles()))
                 // 用户名写入标题
-                .setSubject(username)
-                // 有效期设置
+                .setSubject(yongHu.getYongHuMing())
+                .claim("yongHuId", yongHu.getId())
+                .claim("yongHuMing", yongHu.getYongHuMing())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATIONTIME))
                 // 签名设置
                 .signWith(SignatureAlgorithm.HS512, SECRET)
