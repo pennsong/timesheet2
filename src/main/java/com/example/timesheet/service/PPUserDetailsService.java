@@ -29,7 +29,7 @@ public class PPUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String yongHuMing) throws UsernameNotFoundException {
          YongHu yongHu = yongHuRepository.findOneByYongHuMing(yongHuMing);
         if (yongHu == null) {
-//            log.info("pptest no user:" + yongHuMing);
+            log.info("pptest no user:" + yongHuMing);
             throw new UsernameNotFoundException(
                     "没有找到此用户: "+ yongHuMing);
         }
@@ -37,7 +37,7 @@ public class PPUserDetailsService implements UserDetailsService {
         // 主动调用下以触发懒加载
         yongHu.getAuthorities();
 
-//        log.info("pptest user:" + yongHu);
+        log.info("pptest user:" + yongHu);
 
         return yongHu;
     }

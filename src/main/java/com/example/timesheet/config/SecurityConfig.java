@@ -66,6 +66,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         // 关闭csrf验证
         httpSecurity.csrf().disable()
+                .cors().and()
                 // 对请求进行认证
                 .authorizeRequests()
                 .and()
@@ -92,30 +93,30 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.headers().frameOptions().disable();
     }
 
-//    // todo 把cros搞透
-//    @Bean
-//    CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(Arrays.asList("*"));
-//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"));
-//        configuration.setAllowedHeaders(
-//                Arrays.asList(
-//                        "Origin",
-//                        "Content-Type",
-//                        "Access-Control-Allow-Headers"//,
-////                "X-Auth-TOken",
-////                "Accept",
-////                "X-Requested-With",
-////               "Access-Control-Request-Method",
-////                "Access-Control-Request-Headers",
-////                "Authorization"
-//                )
-//        );
-////        List<String> exposedHeaders = Arrays.asList("x-auth-token", "content-type", "X-Requested-With", "XMLHttpRequest","Authorization");
-////        configuration.setExposedHeaders(exposedHeaders);
-//        configuration.setAllowCredentials(true);
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration);
-//        return source;
-//    }
+    // todo 把cros搞透
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"));
+        configuration.setAllowedHeaders(
+                Arrays.asList(
+                        "Origin",
+                        "Content-Type",
+                        "Access-Control-Allow-Headers",
+                        "X-Auth-TOken",
+                        "Accept",
+                        "X-Requested-With",
+                        "Access-Control-Request-Method",
+                        "Access-Control-Request-Headers",
+                        "Authorization"
+                )
+        );
+//        List<String> exposedHeaders = Arrays.asList("x-auth-token", "content-type", "X-Requested-With", "XMLHttpRequest","Authorization");
+//        configuration.setExposedHeaders(exposedHeaders);
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }

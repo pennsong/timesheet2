@@ -138,7 +138,7 @@ public class CommandLineRunnerBean implements CommandLineRunner {
         workRecord
         g1x1 y1 2000/1/1 10:01 11:01 testWorkNote
         */
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             LocalDateTime start =  LocalDateTime.of(2000, 1, 1, 0, 0);
             mainService.createGongZuoJiLu(
                     y1.getYongHuMing(),
@@ -149,5 +149,6 @@ public class CommandLineRunnerBean implements CommandLineRunner {
             );
         }
 
+        log.info("init ok");
     }
 }

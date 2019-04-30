@@ -47,7 +47,7 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
         // JSON反序列化成 AccountCredentials
         AccountCredentials creds = new ObjectMapper().readValue(req.getInputStream(), AccountCredentials.class);
 
-//        log.info("pptest creds:" + creds.getUsername() + ", " + creds.getPassword());
+        log.info("pptest creds:" + creds.getUsername() + ", " + creds.getPassword());
 
         // 返回一个验证令牌
         return getAuthenticationManager().authenticate(

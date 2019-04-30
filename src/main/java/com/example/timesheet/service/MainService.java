@@ -112,6 +112,46 @@ public class MainService {
     // -公司
 
     /**
+     * 查询公司
+     *
+     */
+    public Page<GongSi> queryGongSi(Integer size, Integer page) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("mingCheng").ascending());
+
+        StringBuilder selectCount = new StringBuilder("SELECT ");
+        StringBuilder selectItem = new StringBuilder("SELECT ");
+        StringBuilder from = new StringBuilder("FROM ");
+        StringBuilder join = new StringBuilder();
+        StringBuilder where = new StringBuilder("WHERE 1 = 1 ");
+        StringBuilder order = new StringBuilder("ORDER BY ");
+
+        Map<String, Object> params = new HashMap();
+
+        from.append("GongSi g ");
+
+        selectCount.append("COUNT(*) ");
+        selectItem.append("g ");
+
+        order.append("g.mingCheng ");
+
+        Query queryCount = entityManager.createQuery(selectCount.toString() + from.toString() + join.toString() + where.toString());
+        Query queryItem = entityManager.createQuery(selectItem.toString() + from.toString() + join.toString() + where.toString() + order.toString());
+        queryItem.setFirstResult(page * size);
+        queryItem.setMaxResults(size);
+
+        for (Map.Entry<String, Object> entry: params.entrySet()) {
+            queryCount.setParameter(entry.getKey(), entry.getValue());
+            queryItem.setParameter(entry.getKey(), entry.getValue());
+        }
+
+        Long count = (Long) queryCount.getResultList().get(0);
+        Page<GongSi> result = new PageImpl<GongSi>(queryItem.getResultList(), pageable, count);
+
+        return result;
+
+    }
+
+    /**
      * 新建公司
      *
      * @param mingCheng 公司名称
@@ -425,6 +465,7 @@ public class MainService {
         return gongZuoJiLuRepository.findYongHuGongZuoJiLu(yongHuId, kaiShi, jieShu, pageable);
     }
 
+    // todo 测试案例
     /**
      * 查询工作记录
      * <p>

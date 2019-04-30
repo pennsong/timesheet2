@@ -116,6 +116,26 @@ public class MainController {
         String password;
     }
 
+    // todo 测试案例
+    @ApiOperation(value = "查询公司", tags = {"Admin", "公司"})
+    @RequestMapping(value = "/admin/queryGongSi", method = RequestMethod.POST)
+    @DtoValid
+    public String queryGongSi(@RequestBody AdminQueryGongSiDto dto) {
+        return ppResponse.response(mainService.queryGongSi(dto.size, dto.page));
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Data
+    public static class AdminQueryGongSiDto {
+        @Min(0)
+        @Max(200)
+        Integer size;
+
+        @Min(0)
+        Integer page;
+    }
+
     @ApiOperation(value = "新建公司", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/createGongSi", method = RequestMethod.POST)
     @DtoValid
@@ -389,9 +409,9 @@ public class MainController {
 
     // todo 测试案例
     @ApiOperation(value = "查询工作记录", tags = {"Admin", "支付"})
-    @RequestMapping(value = "/admin/queryGongZuoJiLu", method = RequestMethod.GET)
+    @RequestMapping(value = "/admin/queryGongZuoJiLu", method = RequestMethod.POST)
     @DtoValid
-    public String queryGongZuoJiLu(AdminQueryGongZuoJiLuDto dto) {
+    public String queryGongZuoJiLu(@RequestBody AdminQueryGongZuoJiLuDto dto) {
         if (dto.kaiShi == null) {
             dto.kaiShi = MIN_DATE;
         }

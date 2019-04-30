@@ -47,11 +47,11 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             PPJson ppJson = new PPJson();
-            ppJson.put("code", "400");
+            ppJson.put("code", "401");
             ppJson.put("message", e.getMessage());
             response.setCharacterEncoding("utf-8");
             response.getWriter().print(ppJson.toString());
-            ((HttpServletResponse) response).setStatus(HttpStatus.BAD_REQUEST.value());
+            ((HttpServletResponse) response).setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
 
