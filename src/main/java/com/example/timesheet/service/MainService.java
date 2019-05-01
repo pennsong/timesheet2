@@ -4,6 +4,11 @@ import com.example.timesheet.exception.PPBusinessException;
 import com.example.timesheet.exception.PPItemNotExistException;
 import com.example.timesheet.model.*;
 import com.example.timesheet.repository.*;
+import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
@@ -111,9 +116,10 @@ public class MainService {
 
     // -公司
 
+    // todo 用querydsl改写
+
     /**
      * 查询公司
-     *
      */
     public Page<GongSi> queryGongSi(Integer size, Integer page) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("mingCheng").ascending());
@@ -139,7 +145,7 @@ public class MainService {
         queryItem.setFirstResult(page * size);
         queryItem.setMaxResults(size);
 
-        for (Map.Entry<String, Object> entry: params.entrySet()) {
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
             queryCount.setParameter(entry.getKey(), entry.getValue());
             queryItem.setParameter(entry.getKey(), entry.getValue());
         }
@@ -195,6 +201,41 @@ public class MainService {
     // -
 
     // -项目
+
+    /**
+     * 查询项目
+     * <p>
+     *
+     * @param size 每页记录数
+     * @param page 页码
+     */
+    public Page<XiangMu> queryXiangMu(Integer size, Integer page) {
+        BooleanExpression predicate = Expressions.asBoolean(true).isTrue();
+
+        JPAQueryFactory factory = new JPAQueryFactory(entityManager);
+
+        QXiangMu qXiangMu = QXiangMu.xiangMu;
+        QGongSi qGongSi = QGongSi.gongSi;
+
+        JPAQuery<XiangMu> jpaQuery = factory.select(qXiangMu)
+                .from(qXiangMu)
+                .join(qGongSi)
+                .on(qXiangMu.gongSi.id.eq(qGongSi.id))
+                .where(predicate);
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(qXiangMu.gongSi.mingCheng.toString()).and(Sort.by(qXiangMu.mingCheng.toString())));
+
+        jpaQuery.orderBy(qXiangMu.gongSi.mingCheng.asc())
+                .orderBy(qXiangMu.mingCheng.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        QueryResults<XiangMu> queryResults = jpaQuery.fetchResults();
+
+        Page<XiangMu> result = new PageImpl(queryResults.getResults(), pageable, queryResults.getTotal());
+
+        return result;
+    }
 
     /**
      * 新建项目
@@ -466,6 +507,7 @@ public class MainService {
     }
 
     // todo 测试案例
+
     /**
      * 查询工作记录
      * <p>
@@ -477,53 +519,46 @@ public class MainService {
     public Page<GongZuoJiLu> queryGongZuoJiLu(Long yongHuId, Long gongSiId, LocalDateTime kaiShi, LocalDateTime jieShu, Integer size, Integer page) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("kaiShi").ascending());
 
-        StringBuilder selectCount = new StringBuilder("SELECT ");
-        StringBuilder selectItem = new StringBuilder("SELECT ");
-        StringBuilder from = new StringBuilder("FROM ");
-        StringBuilder join = new StringBuilder();
-        StringBuilder where = new StringBuilder("WHERE 1 = 1 ");
-        StringBuilder order = new StringBuilder("ORDER BY ");
+        BooleanExpression predicate = Expressions.asBoolean(true).isTrue();
 
-        Map<String, Object> params = new HashMap();
+        predicate = predicate.and(
+                QGongZuoJiLu.gongZuoJiLu.kaiShi.eq(kaiShi).or(QGongZuoJiLu.gongZuoJiLu.kaiShi.after(kaiShi))
+        );
 
-        from.append("GongZuoJiLu g ");
+        predicate = predicate.and(QGongZuoJiLu.gongZuoJiLu.jieShu.before(jieShu));
 
         if (yongHuId != null) {
-            join.append("join YongHu y ");
-            where.append("AND y.id = :yongHuId ");
-            params.put("yongHuId", yongHuId);
+            predicate = predicate.and(QYongHu.yongHu.id.eq(yongHuId));
         }
 
         if (gongSiId != null) {
-            join.append("join XiangMu x ");
-            join.append("join GongSi gs ");
-            where.append("AND gs.id = :gongSiId ");
-            params.put("gongSiId", gongSiId);
+            predicate = predicate.and(QGongSi.gongSi.id.eq(gongSiId));
         }
 
-        where.append("AND g.kaiShi >= :kaiShi ");
-        params.put("kaiShi", kaiShi);
+        JPAQueryFactory factory = new JPAQueryFactory(entityManager);
 
-        where.append("AND g.jieShu < :jieShu ");
-        params.put("jieShu", jieShu);
+        QGongZuoJiLu qGongZuoJiLu = QGongZuoJiLu.gongZuoJiLu;
+        QYongHu qYongHu = QYongHu.yongHu;
+        QXiangMu qXiangMu = QXiangMu.xiangMu;
+        QGongSi qGongSi = QGongSi.gongSi;
 
-        selectCount.append("COUNT(*) ");
-        selectItem.append("g ");
+        JPAQuery<GongZuoJiLu> jpaQuery = factory.select(qGongZuoJiLu)
+                .from(qGongZuoJiLu)
+                .join(qYongHu)
+                .on(qGongZuoJiLu.yongHu.id.eq(qYongHu.id))
+                .join(qXiangMu)
+                .on(qGongZuoJiLu.xiangMu.id.eq(qXiangMu.id))
+                .join(qGongSi)
+                .on(qXiangMu.gongSi.id.eq(qGongSi.id))
+                .where(predicate);
 
-        order.append("g.kaiShi ");
+        jpaQuery.orderBy(QGongZuoJiLu.gongZuoJiLu.kaiShi.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
 
-        Query queryCount = entityManager.createQuery(selectCount.toString() + from.toString() + join.toString() + where.toString());
-        Query queryItem = entityManager.createQuery(selectItem.toString() + from.toString() + join.toString() + where.toString() + order.toString());
-        queryItem.setFirstResult(page * size);
-        queryItem.setMaxResults(size);
+        QueryResults<GongZuoJiLu> queryResults = jpaQuery.fetchResults();
 
-        for (Map.Entry<String, Object> entry: params.entrySet()) {
-            queryCount.setParameter(entry.getKey(), entry.getValue());
-            queryItem.setParameter(entry.getKey(), entry.getValue());
-        }
-
-        Long count = (Long) queryCount.getResultList().get(0);
-        Page<GongZuoJiLu> result = new PageImpl<GongZuoJiLu>(queryItem.getResultList(), pageable, count);
+        Page<GongZuoJiLu> result = new PageImpl(queryResults.getResults(), pageable, queryResults.getTotal());
 
         return result;
     }

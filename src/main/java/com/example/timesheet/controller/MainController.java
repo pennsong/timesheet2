@@ -202,6 +202,26 @@ public class MainController {
         LocalDate jieSuanRi;
     }
 
+    // todo 测试案例
+    @ApiOperation(value = "查询项目", tags = {"Admin", "项目"})
+    @RequestMapping(value = "/admin/queryXiangMu", method = RequestMethod.POST)
+    @DtoValid
+    public String queryXiangMu(@RequestBody AdminQueryXiangMuDto dto) {
+        return ppResponse.response(mainService.queryXiangMu(dto.size, dto.page));
+    }
+
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Data
+    public static class AdminQueryXiangMuDto {
+        @Min(0)
+        @Max(200)
+        Integer size;
+
+        @Min(0)
+        Integer page;
+    }
+
     @ApiOperation(value = "新建项目", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/createXiangMu", method = RequestMethod.POST)
     @DtoValid

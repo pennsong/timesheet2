@@ -2,6 +2,9 @@ package com.example.timesheet.repository;
 
 import com.example.timesheet.model.GongSi;
 import com.example.timesheet.model.GongZuoJiLu;
+import com.querydsl.core.types.Predicate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
