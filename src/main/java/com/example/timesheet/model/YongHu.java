@@ -44,7 +44,6 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
      */
     @NotBlank
     @Setter
-    @JsonIgnore
     private String jiaMiMiMa;
 
     /**
@@ -74,7 +73,6 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
     }
 
     @Override
-    @JsonIgnore
     public String getPassword() {
         return jiaMiMiMa;
     }

@@ -1,7 +1,13 @@
 package com.example.timesheet.util;
 
 import com.example.timesheet.exception.PPValidateException;
+import com.querydsl.core.QueryResults;
+import com.querydsl.jpa.impl.JPAQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import javax.validation.ConstraintViolation;
 import java.time.LocalDate;
@@ -30,5 +36,28 @@ public class PPUtil {
         if (errors.size() > 0) {
             throw new PPValidateException(String.join("; ", errors));
         }
+    }
+
+    public static <T> Page<T> getPageResult(JPAQuery<T> jpaQuery, Integer size, Integer page) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        jpaQuery.offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
+
+        QueryResults<T> queryResults = jpaQuery.fetchResults();
+
+        Page<T> result = new PageImpl(queryResults.getResults(), pageable, queryResults.getTotal());
+
+        return result;
+    }
+
+    public static PPPageInfo getPPPageInfo(Page result) {
+        PPPageInfo ppPageInfo = new PPPageInfo();
+        ppPageInfo.setTotalElements(result.getTotalElements());
+        ppPageInfo.setTotalPages(result.getTotalPages());
+        ppPageInfo.setSize(result.getSize());
+        ppPageInfo.setPage(result.getNumber());
+
+        return ppPageInfo;
     }
 }

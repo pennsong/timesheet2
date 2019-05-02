@@ -9,7 +9,7 @@ import com.example.timesheet.repository.XiangMuRepository;
 import com.example.timesheet.repository.YongHuRepository;
 import com.example.timesheet.service.MainService;
 import com.example.timesheet.service.PPResponse;
-import com.example.timesheet.util.PPJson;
+import com.example.timesheet.util.*;
 import io.swagger.annotations.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Propagation;
@@ -29,7 +30,9 @@ import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.example.timesheet.util.PPUtil.MAX_DATE;
 import static com.example.timesheet.util.PPUtil.MIN_DATE;
@@ -58,13 +61,72 @@ public class MainController {
 
     // -Admin
 
+    // todo 测试案例
+    @ApiOperation(value = "查询用户", tags = {"Admin", "用户"})
+    @RequestMapping(value = "/admin/queryYongHu", method = RequestMethod.POST)
+    @DtoValid
+    public AdminQueryYongHuRDto queryYongHu(@RequestBody AdminQueryYongHuDto dto) {
+        AdminQueryYongHuRDto rDto = new AdminQueryYongHuRDto();
+
+        // code
+        rDto.code = "1";
+
+        // data
+        Page<YongHu> result = mainService.queryYongHu(dto.size, dto.page);
+
+        rDto.setData(
+                result.getContent().stream().map(record -> {
+                    AdminQueryYongHuRDto.Item item = new AdminQueryYongHuRDto.Item();
+                    item.id = record.getId();
+                    item.yongHuMing = record.getYongHuMing();
+                    item.xiaoShiFeiYong = record.getXiaoShiFeiYong();
+
+                    return item;
+                }).collect(Collectors.toList())
+        );
+
+        // ppPageInfo
+        rDto.setPpPageInfo(PPUtil.getPPPageInfo(result));
+
+        return rDto;
+    }
+
+    @Data
+    public static class AdminQueryYongHuDto {
+        @Min(0)
+        @Max(200)
+        Integer size;
+
+        @Min(0)
+        Integer page;
+    }
+
+    @Data
+    static class AdminQueryYongHuRDto {
+        @Data
+        static class Item {
+            Long id;
+            String yongHuMing;
+            BigDecimal xiaoShiFeiYong;
+        }
+
+        String code;
+        List<Item> data;
+        PPPageInfo ppPageInfo;
+    }
+
     @ApiOperation(value = "新建用户", tags = {"Admin", "用户"})
     @RequestMapping(value = "/admin/createYongHu", method = RequestMethod.POST)
     @DtoValid
-    public String createYongHu(@RequestBody CreateYongHuDto dto) {
+    public PPOKRecord<CreateYongHuRDto> createYongHu(@RequestBody CreateYongHuDto dto) {
         YongHu yongHu = mainService.createYongHu(dto.yongHuMing, dto.miMa, dto.xiaoShiFeiYong);
 
-        return ppResponse.response(yongHu);
+        CreateYongHuRDto rDto = new CreateYongHuRDto();
+        rDto.setId(yongHu.getId());
+        rDto.setYongHuMing(yongHu.getYongHuMing());
+        rDto.setXiaoShiFeiYong(yongHu.getXiaoShiFeiYong());
+
+        return new PPOKRecord<CreateYongHuRDto>(rDto);
     }
 
     @ApiModel(description = "新建用户Dto")
@@ -86,22 +148,35 @@ public class MainController {
         BigDecimal xiaoShiFeiYong;
     }
 
+    @ApiModel(description = "新建用户RDto")
+    @Data
+    public static class CreateYongHuRDto {
+        @ApiModelProperty(notes = "id", required = true, position = 1)
+        Long id;
+
+        @ApiModelProperty(notes = "用户名", required = true, position = 2)
+        String yongHuMing;
+
+        @ApiModelProperty(notes = "小时费用", required = true, position = 3)
+        BigDecimal xiaoShiFeiYong;
+    }
+
     @ApiOperation(value = "删除用户", tags = {"Admin", "用户"})
     @RequestMapping(value = "/admin/deleteYongHu/{id}", method = RequestMethod.DELETE)
     @DtoValid
-    public String deleteYongHu(@PathVariable Long id) {
+    public PPOK deleteYongHu(@PathVariable Long id) {
         mainService.deleteYongHu(id);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @ApiOperation(value = "设置指定用户密码", tags = {"Admin", "用户"})
     @RequestMapping(value = "/admin/setYongHuPassword", method = RequestMethod.POST)
     @DtoValid
-    public String setYongHuPassword(@RequestBody YongHuPasswordDto dto) {
+    public PPOK setYongHuPassword(@RequestBody YongHuPasswordDto dto) {
         mainService.changePassword(dto.yongHuId, dto.password);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -120,12 +195,32 @@ public class MainController {
     @ApiOperation(value = "查询公司", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/queryGongSi", method = RequestMethod.POST)
     @DtoValid
-    public String queryGongSi(@RequestBody AdminQueryGongSiDto dto) {
-        return ppResponse.response(mainService.queryGongSi(dto.size, dto.page));
+    public AdminQueryGongSiRDto queryGongSi(@RequestBody AdminQueryGongSiDto dto) {
+        AdminQueryGongSiRDto rDto = new AdminQueryGongSiRDto();
+
+        // code
+        rDto.code = "1";
+
+        // data
+        Page<GongSi> result = mainService.queryGongSi(dto.size, dto.page);
+
+        rDto.setData(
+                result.getContent().stream().map(record -> {
+                    AdminQueryGongSiRDto.Item item = new AdminQueryGongSiRDto.Item();
+                    item.id = record.getId();
+                    item.mingCheng = record.getMingCheng();
+                    item.jieSuanRi = record.getJieSuanRi();
+
+                    return item;
+                }).collect(Collectors.toList())
+        );
+
+        // ppPageInfo
+        rDto.setPpPageInfo(PPUtil.getPPPageInfo(result));
+
+        return rDto;
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
     public static class AdminQueryGongSiDto {
         @Min(0)
@@ -136,39 +231,61 @@ public class MainController {
         Integer page;
     }
 
+    @Data
+    static class AdminQueryGongSiRDto {
+        @Data
+        static class Item {
+            Long id;
+            String mingCheng;
+            LocalDate jieSuanRi;
+        }
+
+        String code;
+        List<Item> data;
+        PPPageInfo ppPageInfo;
+    }
+
     @ApiOperation(value = "新建公司", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/createGongSi", method = RequestMethod.POST)
     @DtoValid
-    public String createGongSi(@RequestBody CreateGongSiDto dto) {
+    public PPOKRecord<CreateGongSiRDto> createGongSi(@RequestBody CreateGongSiDto dto) {
         GongSi gongSi = mainService.createGongSi(dto.mingCheng);
 
-        return ppResponse.response(gongSi);
+        CreateGongSiRDto rDto = new CreateGongSiRDto();
+        rDto.setId(gongSi.getId());
+        rDto.setMingCheng(gongSi.getMingCheng());
+
+        return new PPOKRecord<>(rDto);
     }
 
-    @AllArgsConstructor
-    @NoArgsConstructor
     @Data
     public static class CreateGongSiDto {
         @NotBlank
         String mingCheng;
     }
 
+    @Data
+    public static class CreateGongSiRDto {
+        Long id;
+        String mingCheng;
+    }
+
     @ApiOperation(value = "删除公司", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/deleteGongSi/{id}", method = RequestMethod.DELETE)
     @DtoValid
-    public String deleteGongSi(@PathVariable Long id) {
+    public PPOK deleteGongSi(@PathVariable Long id) {
         mainService.deleteGongSi(id);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @ApiOperation(value = "设置公司名称", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/setGongSiMingCheng", method = RequestMethod.POST)
     @DtoValid
-    public String setGongSiMingCheng(@RequestBody SetGongSiMingChengDto dto) {
+    public PPOK setGongSiMingCheng(@RequestBody SetGongSiMingChengDto dto) {
         mainService.setGongSiMingCheng(dto.id, dto.mingCheng);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -185,10 +302,10 @@ public class MainController {
     @ApiOperation(value = "设置公司结算日", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/setGongSiJieSuanRi", method = RequestMethod.POST)
     @DtoValid
-    public String setGongSiJieSuanRi(@RequestBody SetGongSiJieSuanRiDto dto) {
+    public PPOK setGongSiJieSuanRi(@RequestBody SetGongSiJieSuanRiDto dto) {
         mainService.setGongSiJieSuanRi(dto.id, dto.jieSuanRi);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -206,12 +323,32 @@ public class MainController {
     @ApiOperation(value = "查询项目", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/queryXiangMu", method = RequestMethod.POST)
     @DtoValid
-    public String queryXiangMu(@RequestBody AdminQueryXiangMuDto dto) {
-        return ppResponse.response(mainService.queryXiangMu(dto.size, dto.page));
+    public AdminQueryXiangMuRDto queryYongHu(@RequestBody AdminQueryXiangMuDto dto) {
+        AdminQueryXiangMuRDto rDto = new AdminQueryXiangMuRDto();
+
+        // code
+        rDto.code = "1";
+
+        // data
+        Page<XiangMu> result = mainService.queryXiangMu(dto.size, dto.page);
+
+        rDto.setData(
+                result.getContent().stream().map(record -> {
+                    AdminQueryXiangMuRDto.Item item = new AdminQueryXiangMuRDto.Item();
+                    item.id = record.getId();
+                    item.mingCheng = record.getMingCheng();
+                    item.gongSiObjMingCheng = record.getGongSi().getMingCheng();
+
+                    return item;
+                }).collect(Collectors.toList())
+        );
+
+        // ppPageInfo
+        rDto.setPpPageInfo(PPUtil.getPPPageInfo(result));
+
+        return rDto;
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
     public static class AdminQueryXiangMuDto {
         @Min(0)
@@ -222,17 +359,34 @@ public class MainController {
         Integer page;
     }
 
+    @Data
+    static class AdminQueryXiangMuRDto {
+        @Data
+        static class Item {
+            Long id;
+            String mingCheng;
+            String gongSiObjMingCheng;
+        }
+
+        String code;
+        List<Item> data;
+        PPPageInfo ppPageInfo;
+    }
+
     @ApiOperation(value = "新建项目", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/createXiangMu", method = RequestMethod.POST)
     @DtoValid
-    public String createXiangMu(@RequestBody createXiangMuDto dto) {
+    public PPOKRecord<createXiangMuRDto> createXiangMu(@RequestBody createXiangMuDto dto) {
         XiangMu xiangMu = mainService.createXiangMu(dto.mingCheng, dto.gongSiId);
 
-        return ppResponse.response(xiangMu);
+        createXiangMuRDto rDto = new createXiangMuRDto();
+        rDto.id = xiangMu.getId();
+        rDto.gongSiObjId = xiangMu.getGongSi().getId();
+        rDto.mingCheng = xiangMu.getMingCheng();
+
+        return new PPOKRecord(rDto);
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
     public static class createXiangMuDto {
         @NotBlank
@@ -242,22 +396,29 @@ public class MainController {
         Long gongSiId;
     }
 
+    @Data
+    public static class createXiangMuRDto {
+        Long id;
+        Long gongSiObjId;
+        String mingCheng;
+    }
+
     @ApiOperation(value = "删除项目", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/deleteXiangMu/{id}", method = RequestMethod.DELETE)
     @DtoValid
-    public String deleteXiangMu(@PathVariable Long id) {
+    public PPOK deleteXiangMu(@PathVariable Long id) {
         mainService.deleteXiangMu(id);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @ApiOperation(value = "添加项目计费标准", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/addXiangMuJiFeiBiaoZhun", method = RequestMethod.POST)
     @DtoValid
-    public String addXiangMuJiFeiBiaoZhun(@RequestBody AddXiangMuJiFeiBiaoZhunDto dto) {
+    public PPOK addXiangMuJiFeiBiaoZhun(@RequestBody AddXiangMuJiFeiBiaoZhunDto dto) {
         mainService.addXiangMuJiFeiBiaoZhun(dto.xiangMuId, dto.yongHuId, dto.kaiShi, dto.xiaoShiFeiYong);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -280,10 +441,10 @@ public class MainController {
     @ApiOperation(value = "移除项目计费标准", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/removeXiangMuJiFeiBiaoZhun", method = RequestMethod.POST)
     @DtoValid
-    public String removeXiangMuJiFeiBiaoZhun(@RequestBody RemoveXiangMuJiFeiBiaoZhun dto) {
+    public PPOK removeXiangMuJiFeiBiaoZhun(@RequestBody RemoveXiangMuJiFeiBiaoZhun dto) {
         mainService.removeXiangMuJiFeiBiaoZhun(dto.xiangMuId, dto.yongHuId, dto.kaiShi);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -303,10 +464,10 @@ public class MainController {
     @ApiOperation(value = "添加项目成员", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/addXiangMuChengYuan", method = RequestMethod.POST)
     @DtoValid
-    public String addXiangMuChengYuan(@RequestBody AddXiangMuChengYuan dto) {
+    public PPOK addXiangMuChengYuan(@RequestBody AddXiangMuChengYuan dto) {
         mainService.addXiangMuChengYuan(dto.xiangMuId, dto.yongHuId);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -323,10 +484,10 @@ public class MainController {
     @ApiOperation(value = "移除项目成员", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/removeXiangMuChengYuan", method = RequestMethod.POST)
     @DtoValid
-    public String removeXiangMuChengYuan(@RequestBody RemoveXiangMuChengYuan dto) {
+    public PPOK removeXiangMuChengYuan(@RequestBody RemoveXiangMuChengYuan dto) {
         mainService.removeXiangMuChengYuan(dto.xiangMuId, dto.yongHuId);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -343,7 +504,7 @@ public class MainController {
     @ApiOperation(value = "导入用户工作记录", tags = {"Admin", "工作记录"})
     @RequestMapping(value = "/admin/importYongHuGongZuoJiLu", method = RequestMethod.POST)
     @DtoValid
-    public String importYongHuGongZuoJiLu(@RequestBody ImportYongHuGongZuoJiLuDto dto) {
+    public PPOK importYongHuGongZuoJiLu(@RequestBody ImportYongHuGongZuoJiLuDto dto) {
         for (YongHuGongZuoJiLuDto item : dto.data) {
             mainService.createGongZuoJiLu(item.yongHuMing,
                     item.xiangMuMingCheng,
@@ -352,7 +513,7 @@ public class MainController {
                     item.beiZhu);
         }
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -387,25 +548,30 @@ public class MainController {
     @ApiOperation(value = "删除工作记录", tags = {"Admin", "工作记录"})
     @RequestMapping(value = "/admin/deleteYongHuGongZuoJiLu/{id}", method = RequestMethod.DELETE)
     @DtoValid
-    public String deleteYongHuGongZuoJiLu(@PathVariable Long id) {
+    public PPOK deleteYongHuGongZuoJiLu(@PathVariable Long id) {
         mainService.deleteGongZuoJiLu(id);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @ApiOperation(value = "新建支付", tags = {"Admin", "支付"})
     @RequestMapping(value = "/admin/createZhiFu", method = RequestMethod.POST)
     @DtoValid
-    public String createZhiFu(@RequestBody CreateZhiFuDto dto) {
+    public PPOKRecord<CreateZhiFuRDto> createZhiFu(@RequestBody CreateZhiFuDto dto) {
         ZhiFu zhiFu = mainService.createZhiFu(dto.gongSiMingCheng, dto.riQi, dto.jinE, dto.beiZhu);
 
-        return ppResponse.response(zhiFu);
+        CreateZhiFuRDto rDto = new CreateZhiFuRDto();
+        rDto.id = zhiFu.getId();
+        rDto.gongSiObjMingCheng = zhiFu.getGongSi().getMingCheng();
+        rDto.riQi = zhiFu.getRiQi();
+        rDto.jinE = zhiFu.getJingE();
+        rDto.beiZhu = zhiFu.getBeiZhu();
+
+        return new PPOKRecord<>(rDto);
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
-    public static class CreateZhiFuDto {
+    static class CreateZhiFuDto {
         @NotBlank
         String gongSiMingCheng;
 
@@ -415,6 +581,15 @@ public class MainController {
         @NotNull
         BigDecimal jinE;
 
+        String beiZhu;
+    }
+
+    @Data
+    static class CreateZhiFuRDto {
+        Long id;
+        String gongSiObjMingCheng;
+        LocalDate riQi;
+        BigDecimal jinE;
         String beiZhu;
     }
 
@@ -431,7 +606,7 @@ public class MainController {
     @ApiOperation(value = "查询工作记录", tags = {"Admin", "支付"})
     @RequestMapping(value = "/admin/queryGongZuoJiLu", method = RequestMethod.POST)
     @DtoValid
-    public String queryGongZuoJiLu(@RequestBody AdminQueryGongZuoJiLuDto dto) {
+    public AdminQueryGongZuoJiLuRDto queryGongZuoJiLu(@RequestBody AdminQueryGongZuoJiLuDto dto) {
         if (dto.kaiShi == null) {
             dto.kaiShi = MIN_DATE;
         }
@@ -448,15 +623,37 @@ public class MainController {
             dto.page = 0;
         }
 
-        Page<GongZuoJiLu> gongZuoJiLus = mainService.queryGongZuoJiLu(dto.yongHuId, dto.gongSiId, dto.kaiShi.atStartOfDay(), dto.jieShu.plusDays(1).atStartOfDay(), dto.size, dto.page);
+        AdminQueryGongZuoJiLuRDto rDto = new AdminQueryGongZuoJiLuRDto();
 
-        return ppResponse.response(gongZuoJiLus);
+        // code
+        rDto.code = "1";
+
+        // data
+        Page<GongZuoJiLu> result = mainService.queryGongZuoJiLu(dto.yongHuId, dto.gongSiId, dto.kaiShi.atStartOfDay(), dto.jieShu.plusDays(1).atStartOfDay(), dto.size, dto.page);
+
+        rDto.setData(
+                result.getContent().stream().map(record -> {
+                    AdminQueryGongZuoJiLuRDto.Item item = new AdminQueryGongZuoJiLuRDto.Item();
+                    item.id = record.getId();
+                    item.kaiShi = record.getKaiShi();
+                    item.jieShu = record.getJieShu();
+                    item.gongSiObjMingCheng = record.getYongHu().getYongHuMing();
+                    item.xiangMuObjMingCheng = record.getXiangMu().getMingCheng();
+                    item.yongHuObjYongHuMing = record.getYongHu().getYongHuMing();
+                    item.beiZhu = record.getBeiZhu();
+
+                    return item;
+                }).collect(Collectors.toList())
+        );
+
+        // ppPageInfo
+        rDto.setPpPageInfo(PPUtil.getPPPageInfo(result));
+
+        return rDto;
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
-    public static class AdminQueryGongZuoJiLuDto {
+    static class AdminQueryGongZuoJiLuDto {
         Long gongSiId;
 
         Long yongHuId;
@@ -473,6 +670,24 @@ public class MainController {
 
         @Min(0)
         Integer page;
+    }
+
+    @Data
+    static class AdminQueryGongZuoJiLuRDto {
+        @Data
+        static class Item {
+            Long id;
+            LocalDateTime kaiShi;
+            LocalDateTime jieShu;
+            String gongSiObjMingCheng;
+            String xiangMuObjMingCheng;
+            String yongHuObjYongHuMing;
+            String beiZhu;
+        }
+
+        String code;
+        List<Item> data;
+        PPPageInfo ppPageInfo;
     }
 
     @ApiOperation(value = "生成报告", notes = "成功生成报告后, 把对应公司的结算日设置为报告结束日期", tags = {"Admin", "报告"})
@@ -515,12 +730,12 @@ public class MainController {
     @ApiOperation(value = "设置当前用户密码", tags = {"用户"})
     @RequestMapping(value = "/changePassword", method = RequestMethod.POST)
     @DtoValid
-    public String changePassword(Authentication authentication, @RequestBody PasswordDto dto) {
+    public PPOK changePassword(Authentication authentication, @RequestBody PasswordDto dto) {
         Long yongHuId = ((PPJson) (authentication.getPrincipal())).getLong("yongHuId");
 
         mainService.changePassword(yongHuId, dto.password);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -535,7 +750,7 @@ public class MainController {
     @ApiOperation(value = "导入本人工作记录", tags = {"用户"})
     @RequestMapping(value = "/importGongZuoJiLu", method = RequestMethod.POST)
     @DtoValid
-    public String importGongZuoJiLu(Authentication authentication, @RequestBody ImportGongZuoJiLuDto dto) {
+    public PPOK importGongZuoJiLu(Authentication authentication, @RequestBody ImportGongZuoJiLuDto dto) {
         for (GongZuoJiLuDto item : dto.data) {
             String yongHuMing = ((PPJson) (authentication.getPrincipal())).getString("yongHuMing");
 
@@ -546,7 +761,7 @@ public class MainController {
                     item.beiZhu);
         }
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @NoArgsConstructor
@@ -578,7 +793,7 @@ public class MainController {
     @ApiOperation(value = "删除本人工作记录", tags = {"用户"})
     @RequestMapping(value = "/deleteGongZuoJiLu/{id}", method = RequestMethod.DELETE)
     @DtoValid
-    public String deleteGongZuoJiLu(Authentication authentication, @PathVariable Long id) {
+    public PPOK deleteGongZuoJiLu(Authentication authentication, @PathVariable Long id) {
         GongZuoJiLu gongZuoJiLu = mainService.gainEntityWithExistsChecking(GongZuoJiLu.class, id);
         String yongHuMing = ((PPJson) (authentication.getPrincipal())).getString("yongHuMing");
 
@@ -588,13 +803,13 @@ public class MainController {
 
         mainService.deleteGongZuoJiLu(id);
 
-        return ppResponse.response("ok");
+        return PPOK.OK;
     }
 
     @ApiOperation(value = "查询自己的工作记录", tags = {"用户"})
     @RequestMapping(value = "/queryGongZuoJiLu", method = RequestMethod.POST)
     @DtoValid
-    public String queryGongZuoJiLu(Authentication authentication, @RequestBody QueryGongZuoJiLuDto dto) {
+    public QueryGongZuoJiLuRDto queryGongZuoJiLu(Authentication authentication, @RequestBody QueryGongZuoJiLuDto dto) {
         Long yongHuId = ((PPJson) (authentication.getPrincipal())).getLong("yongHuId");
 
         if (dto.kaiShi == null) {
@@ -613,17 +828,45 @@ public class MainController {
             dto.page = 0;
         }
 
-        List<GongZuoJiLu> gongZuoJiLus = mainService.queryGongZuoJiLu(yongHuId, dto.kaiShi.atStartOfDay(), dto.jieShu.plusDays(1).atStartOfDay(), dto.size, dto.page);
+        QueryGongZuoJiLuRDto rDto = new QueryGongZuoJiLuRDto();
 
-        return ppResponse.response(gongZuoJiLus);
+        // code
+        rDto.code = "1";
+
+        // data
+        Page<GongZuoJiLu> result = mainService.queryGongZuoJiLu(yongHuId, dto.gongSiId, dto.kaiShi.atStartOfDay(), dto.jieShu.plusDays(1).atStartOfDay(), dto.size, dto.page);
+
+        rDto.setData(
+                result.getContent().stream().map(record -> {
+                    QueryGongZuoJiLuRDto.Item item = new QueryGongZuoJiLuRDto.Item();
+                    item.id = record.getId();
+                    item.kaiShi = record.getKaiShi();
+                    item.jieShu = record.getJieShu();
+                    item.gongSiObjMngCheng = record.getYongHu().getYongHuMing();
+                    item.xiangMuObjMingCheng = record.getXiangMu().getMingCheng();
+                    item.yongHuObjYongHuMing = record.getYongHu().getYongHuMing();
+                    item.beiZhu = record.getBeiZhu();
+
+                    return item;
+                }).collect(Collectors.toList())
+        );
+
+        // ppPageInfo
+        rDto.setPpPageInfo(PPUtil.getPPPageInfo(result));
+
+        return rDto;
     }
 
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Data
-    public static class QueryGongZuoJiLuDto {
+    static class QueryGongZuoJiLuDto {
+        Long gongSiId;
+
+        Long yongHuId;
+
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         LocalDate kaiShi;
 
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         LocalDate jieShu;
 
         @Min(0)
@@ -632,5 +875,23 @@ public class MainController {
 
         @Min(0)
         Integer page;
+    }
+
+    @Data
+    static class QueryGongZuoJiLuRDto {
+        @Data
+        static class Item {
+            Long id;
+            LocalDateTime kaiShi;
+            LocalDateTime jieShu;
+            String gongSiObjMngCheng;
+            String xiangMuObjMingCheng;
+            String yongHuObjYongHuMing;
+            String beiZhu;
+        }
+
+        String code;
+        List<Item> data;
+        PPPageInfo ppPageInfo;
     }
 }

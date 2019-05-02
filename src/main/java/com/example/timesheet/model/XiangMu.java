@@ -42,12 +42,7 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
      * 公司
      */
     @ManyToOne(optional = false)
-    @JsonIgnore
     private GongSi gongSi;
-
-    public String getGongSi_mingCheng() {
-        return gongSi.getMingCheng();
-    }
 
     /**
      * 计费标准列表

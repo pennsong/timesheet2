@@ -4,6 +4,7 @@ import com.example.timesheet.exception.PPBusinessException;
 import com.example.timesheet.exception.PPItemNotExistException;
 import com.example.timesheet.model.*;
 import com.example.timesheet.repository.*;
+import com.example.timesheet.util.PPUtil;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -72,6 +73,29 @@ public class MainService {
 
     // -用户
 
+    // todo 测试
+
+    /**
+     * 查询用户
+     * <p>
+     *
+     * @param size 每页记录数
+     * @param page 页码
+     */
+    public Page<YongHu> queryYongHu(Integer size, Integer page) {
+        BooleanExpression predicate = Expressions.asBoolean(true).isTrue();
+        JPAQueryFactory factory = new JPAQueryFactory(entityManager);
+
+        QYongHu qYongHu = QYongHu.yongHu;
+        JPAQuery<YongHu> jpaQuery = factory.select(qYongHu)
+                .from(qYongHu)
+                .where(predicate);
+
+        jpaQuery.orderBy(qYongHu.yongHuMing.asc());
+
+        return PPUtil.getPageResult(jpaQuery, size, page);
+    }
+
     /**
      * 新建用户
      *
@@ -122,39 +146,17 @@ public class MainService {
      * 查询公司
      */
     public Page<GongSi> queryGongSi(Integer size, Integer page) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("mingCheng").ascending());
+        BooleanExpression predicate = Expressions.asBoolean(true).isTrue();
+        JPAQueryFactory factory = new JPAQueryFactory(entityManager);
 
-        StringBuilder selectCount = new StringBuilder("SELECT ");
-        StringBuilder selectItem = new StringBuilder("SELECT ");
-        StringBuilder from = new StringBuilder("FROM ");
-        StringBuilder join = new StringBuilder();
-        StringBuilder where = new StringBuilder("WHERE 1 = 1 ");
-        StringBuilder order = new StringBuilder("ORDER BY ");
+        QGongSi qGongSi = QGongSi.gongSi;
+        JPAQuery<GongSi> jpaQuery = factory.select(qGongSi)
+                .from(qGongSi)
+                .where(predicate);
 
-        Map<String, Object> params = new HashMap();
+        jpaQuery.orderBy(qGongSi.mingCheng.asc());
 
-        from.append("GongSi g ");
-
-        selectCount.append("COUNT(*) ");
-        selectItem.append("g ");
-
-        order.append("g.mingCheng ");
-
-        Query queryCount = entityManager.createQuery(selectCount.toString() + from.toString() + join.toString() + where.toString());
-        Query queryItem = entityManager.createQuery(selectItem.toString() + from.toString() + join.toString() + where.toString() + order.toString());
-        queryItem.setFirstResult(page * size);
-        queryItem.setMaxResults(size);
-
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            queryCount.setParameter(entry.getKey(), entry.getValue());
-            queryItem.setParameter(entry.getKey(), entry.getValue());
-        }
-
-        Long count = (Long) queryCount.getResultList().get(0);
-        Page<GongSi> result = new PageImpl<GongSi>(queryItem.getResultList(), pageable, count);
-
-        return result;
-
+        return PPUtil.getPageResult(jpaQuery, size, page);
     }
 
     /**
@@ -515,52 +517,36 @@ public class MainService {
      * @param yongHuId 用户id
      * @param kaiShi   开始日期(包含)
      * @param jieShu   结束日期(不包含)
+     * @param size 每页记录数
+     * @param page 页码
      */
     public Page<GongZuoJiLu> queryGongZuoJiLu(Long yongHuId, Long gongSiId, LocalDateTime kaiShi, LocalDateTime jieShu, Integer size, Integer page) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("kaiShi").ascending());
-
         BooleanExpression predicate = Expressions.asBoolean(true).isTrue();
-
-        predicate = predicate.and(
-                QGongZuoJiLu.gongZuoJiLu.kaiShi.eq(kaiShi).or(QGongZuoJiLu.gongZuoJiLu.kaiShi.after(kaiShi))
-        );
-
-        predicate = predicate.and(QGongZuoJiLu.gongZuoJiLu.jieShu.before(jieShu));
-
-        if (yongHuId != null) {
-            predicate = predicate.and(QYongHu.yongHu.id.eq(yongHuId));
-        }
-
-        if (gongSiId != null) {
-            predicate = predicate.and(QGongSi.gongSi.id.eq(gongSiId));
-        }
-
         JPAQueryFactory factory = new JPAQueryFactory(entityManager);
 
         QGongZuoJiLu qGongZuoJiLu = QGongZuoJiLu.gongZuoJiLu;
-        QYongHu qYongHu = QYongHu.yongHu;
-        QXiangMu qXiangMu = QXiangMu.xiangMu;
-        QGongSi qGongSi = QGongSi.gongSi;
+
+        predicate = predicate.and(
+                qGongZuoJiLu.kaiShi.eq(kaiShi).or(qGongZuoJiLu.kaiShi.after(kaiShi))
+        );
+
+        predicate = predicate.and(qGongZuoJiLu.jieShu.before(jieShu));
+
+        if (yongHuId != null) {
+            predicate = predicate.and(qGongZuoJiLu.yongHu.id.eq(yongHuId));
+        }
+
+        if (gongSiId != null) {
+            predicate = predicate.and(qGongZuoJiLu.xiangMu.gongSi.id.eq(gongSiId));
+        }
 
         JPAQuery<GongZuoJiLu> jpaQuery = factory.select(qGongZuoJiLu)
                 .from(qGongZuoJiLu)
-                .join(qYongHu)
-                .on(qGongZuoJiLu.yongHu.id.eq(qYongHu.id))
-                .join(qXiangMu)
-                .on(qGongZuoJiLu.xiangMu.id.eq(qXiangMu.id))
-                .join(qGongSi)
-                .on(qXiangMu.gongSi.id.eq(qGongSi.id))
                 .where(predicate);
 
-        jpaQuery.orderBy(QGongZuoJiLu.gongZuoJiLu.kaiShi.asc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize());
+        jpaQuery.orderBy(qGongZuoJiLu.kaiShi.desc());
 
-        QueryResults<GongZuoJiLu> queryResults = jpaQuery.fetchResults();
-
-        Page<GongZuoJiLu> result = new PageImpl(queryResults.getResults(), pageable, queryResults.getTotal());
-
-        return result;
+        return PPUtil.getPageResult(jpaQuery, size, page);
     }
 
     // -报告

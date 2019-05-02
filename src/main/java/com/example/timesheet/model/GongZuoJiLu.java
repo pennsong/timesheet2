@@ -45,27 +45,13 @@ public class GongZuoJiLu extends PPEntityTypeValidatableAbstract {
      * 工作人员
      */
     @ManyToOne(optional = false)
-    @JsonIgnore
     private YongHu yongHu;
-
-    public String getYongHu_yongHuMing() {
-        return yongHu.getYongHuMing();
-    }
 
     /**
      * 工作项目
      */
     @ManyToOne(optional = false)
-    @JsonIgnore
     private XiangMu xiangMu;
-
-    public String getXiangMu_mingCheng() {
-        return xiangMu.getMingCheng();
-    }
-
-    public String getGongSi_mingCheng() {
-        return xiangMu.getGongSi().getMingCheng();
-    }
 
     /**
      * 工作内容

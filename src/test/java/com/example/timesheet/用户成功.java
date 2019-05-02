@@ -277,8 +277,8 @@ public class 用户成功 extends TimesheetApplicationTests {
         checkCode(response, PPOK);
 
         JSONObject jsonObject = new JSONObject(response.getBody());
-        Assert.assertEquals("g1x1", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("xiangMu_mingCheng"));
-        Assert.assertEquals("y1", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("yongHu_yongHuMing"));
+        Assert.assertEquals("g1x1", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("xiangMuObjMingCheng"));
+        Assert.assertEquals("y1", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("yongHuObjYongHuMing"));
         Assert.assertEquals("2000-01-01T10:01:00", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("kaiShi"));
         Assert.assertEquals("2000-01-01T11:01:00", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("jieShu"));
         Assert.assertEquals("testWorkNote", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("beiZhu"));
