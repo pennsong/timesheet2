@@ -57,6 +57,7 @@ public class PPUtil {
         ppPageInfo.setTotalPages(result.getTotalPages());
         ppPageInfo.setSize(result.getSize());
         ppPageInfo.setPage(result.getNumber());
+        ppPageInfo.setEmpty(result.isEmpty());
 
         return ppPageInfo;
     }

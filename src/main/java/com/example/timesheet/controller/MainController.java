@@ -66,6 +66,14 @@ public class MainController {
     @RequestMapping(value = "/admin/queryYongHu", method = RequestMethod.POST)
     @DtoValid
     public AdminQueryYongHuRDto queryYongHu(@RequestBody AdminQueryYongHuDto dto) {
+        if (dto.size == null) {
+            dto.size = 50;
+        }
+
+        if (dto.page == null) {
+            dto.page = 0;
+        }
+
         AdminQueryYongHuRDto rDto = new AdminQueryYongHuRDto();
 
         // code
@@ -196,6 +204,14 @@ public class MainController {
     @RequestMapping(value = "/admin/queryGongSi", method = RequestMethod.POST)
     @DtoValid
     public AdminQueryGongSiRDto queryGongSi(@RequestBody AdminQueryGongSiDto dto) {
+        if (dto.size == null) {
+            dto.size = 50;
+        }
+
+        if (dto.page == null) {
+            dto.page = 0;
+        }
+
         AdminQueryGongSiRDto rDto = new AdminQueryGongSiRDto();
 
         // code
@@ -255,7 +271,9 @@ public class MainController {
         rDto.setId(gongSi.getId());
         rDto.setMingCheng(gongSi.getMingCheng());
 
-        return new PPOKRecord<>(rDto);
+        PPOKRecord<CreateGongSiRDto> r = new PPOKRecord<CreateGongSiRDto>(rDto);
+
+        return r;
     }
 
     @Data
@@ -323,7 +341,15 @@ public class MainController {
     @ApiOperation(value = "查询项目", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/queryXiangMu", method = RequestMethod.POST)
     @DtoValid
-    public AdminQueryXiangMuRDto queryYongHu(@RequestBody AdminQueryXiangMuDto dto) {
+    public AdminQueryXiangMuRDto queryXiangMu(@RequestBody AdminQueryXiangMuDto dto) {
+        if (dto.size == null) {
+            dto.size = 50;
+        }
+
+        if (dto.page == null) {
+            dto.page = 0;
+        }
+
         AdminQueryXiangMuRDto rDto = new AdminQueryXiangMuRDto();
 
         // code
@@ -373,6 +399,44 @@ public class MainController {
         PPPageInfo ppPageInfo;
     }
 
+    // todo 测试案例
+    @ApiOperation(value = "查询单个项目", tags = {"Admin", "项目"})
+    @RequestMapping(value = "/admin/queryXiangMu/{id}", method = RequestMethod.GET)
+    @DtoValid
+    public PPOKRecord<AdminQueryDanGeXiangMuRDto> queryDanGeXiangMu(@PathVariable Long id) {
+        XiangMu xiangMu = mainService.gainEntityWithExistsChecking(XiangMu.class, id);
+
+        AdminQueryDanGeXiangMuRDto rDto = new AdminQueryDanGeXiangMuRDto();
+        rDto.id = xiangMu.getId();
+        rDto.mingCheng = xiangMu.getMingCheng();
+        rDto.jiFeiBiaoZhunRDtos = xiangMu.getJiFeiBiaoZhuns().stream().map(item -> {
+            AdminQueryDanGeXiangMuRDto.JiFeiBiaoZhunRDto jiFeiBiaoZhunRDto = new AdminQueryDanGeXiangMuRDto.JiFeiBiaoZhunRDto();
+            jiFeiBiaoZhunRDto.yongHuObjId = item.getYongHu().getId();
+            jiFeiBiaoZhunRDto.yongHuObjYongHuMing = item.getYongHu().getYongHuMing();
+            jiFeiBiaoZhunRDto.kaiShi = item.getKaiShi();
+            jiFeiBiaoZhunRDto.xiaoShiFeiYong = item.getXiaoShiFeiYong();
+
+            return jiFeiBiaoZhunRDto;
+        }).collect(Collectors.toList());
+
+        return new PPOKRecord<>(rDto);
+    }
+
+    @Data
+    static class AdminQueryDanGeXiangMuRDto {
+        @Data
+        static class JiFeiBiaoZhunRDto {
+            Long yongHuObjId;
+            String yongHuObjYongHuMing;
+            LocalDate kaiShi;
+            BigDecimal xiaoShiFeiYong;
+        }
+
+        Long id;
+        String mingCheng;
+        List<JiFeiBiaoZhunRDto> jiFeiBiaoZhunRDtos;
+    }
+
     @ApiOperation(value = "新建项目", tags = {"Admin", "项目"})
     @RequestMapping(value = "/admin/createXiangMu", method = RequestMethod.POST)
     @DtoValid
@@ -400,6 +464,24 @@ public class MainController {
     public static class createXiangMuRDto {
         Long id;
         Long gongSiObjId;
+        String mingCheng;
+    }
+
+    @ApiOperation(value = "设置项目名称", tags = {"Admin", "项目"})
+    @RequestMapping(value = "/admin/setXiangMuMingCheng", method = RequestMethod.POST)
+    @DtoValid
+    public PPOK setXiangMuMingCheng(@RequestBody SetXiangMuMingCheng dto) {
+        mainService.setXiangMuMingCheng(dto.id, dto.mingCheng);
+
+        return PPOK.OK;
+    }
+
+    @Data
+    public static class SetXiangMuMingCheng {
+        @NotNull
+        Long id;
+
+        @NotBlank
         String mingCheng;
     }
 

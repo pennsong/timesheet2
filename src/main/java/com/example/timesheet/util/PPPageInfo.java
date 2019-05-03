@@ -8,4 +8,5 @@ public class PPPageInfo {
     int totalPages;
     int size;
     int page;
+    boolean empty;
 }

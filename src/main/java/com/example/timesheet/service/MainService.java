@@ -264,6 +264,10 @@ public class MainService {
     /**
      * 修改项目名称
      */
+    public void setXiangMuMingCheng(Long id, String mingCheng) {
+        XiangMu xiangMu = gainEntityWithExistsChecking(XiangMu.class, id);
+        xiangMu.setMingCheng(mingCheng);
+    }
 
     /**
      * 添加项目计费标准
@@ -517,8 +521,8 @@ public class MainService {
      * @param yongHuId 用户id
      * @param kaiShi   开始日期(包含)
      * @param jieShu   结束日期(不包含)
-     * @param size 每页记录数
-     * @param page 页码
+     * @param size     每页记录数
+     * @param page     页码
      */
     public Page<GongZuoJiLu> queryGongZuoJiLu(Long yongHuId, Long gongSiId, LocalDateTime kaiShi, LocalDateTime jieShu, Integer size, Integer page) {
         BooleanExpression predicate = Expressions.asBoolean(true).isTrue();
