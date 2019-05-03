@@ -41,7 +41,7 @@ public class ZhiFu extends PPEntityTypeValidatableAbstract {
      * 支付金额
      */
     @NotNull
-    private BigDecimal jingE;
+    private BigDecimal jinE;
 
     /**
      * 备注
@@ -50,6 +50,6 @@ public class ZhiFu extends PPEntityTypeValidatableAbstract {
 
     @Override
     public String toString() {
-        return "支付: (" + gongSi.getMingCheng() + ", " + riQi + ", " + jingE + ", " + beiZhu + ")";
+        return "支付: (" + gongSi.getMingCheng() + ", " + riQi + ", " + jinE + ", " + beiZhu + ")";
     }
 }

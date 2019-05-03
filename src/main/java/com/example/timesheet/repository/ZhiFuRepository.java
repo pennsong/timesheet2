@@ -36,7 +36,7 @@ public interface ZhiFuRepository extends CrudRepository<ZhiFu, Long> {
      * @param gongSiId 公司id
      * @param jieShu   结束日期 小于等于
      */
-    @Query("select case when sum(z.jingE) is null then 0 else sum(z.jingE) end " +
+    @Query("select case when sum(z.jinE) is null then 0 else sum(z.jinE) end " +
             "from ZhiFu z " +
             "join z.gongSi g " +
             "where g.id = :gongSiId " +

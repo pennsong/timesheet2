@@ -565,7 +565,7 @@ public class Admin成功 extends TimesheetApplicationTests {
         Boolean result = StreamSupport.stream(zhiFuRepository.findAll().spliterator(), false)
                 .anyMatch(item -> item.getGongSi().getMingCheng().equals("g1")
                         && item.getRiQi().isEqual(LocalDate.of(2000, 3, 1))
-                        && item.getJingE().compareTo(new BigDecimal("1.1")) == 0
+                        && item.getJinE().compareTo(new BigDecimal("1.1")) == 0
                         && item.getBeiZhu().equals("testPayment")
                 );
 

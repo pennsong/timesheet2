@@ -637,6 +637,72 @@ public class MainController {
         return PPOK.OK;
     }
 
+    // todo 测试案例
+    @ApiOperation(value = "查询支付", tags = {"Admin", "公司"})
+    @RequestMapping(value = "/admin/queryZhiFu", method = RequestMethod.POST)
+    @DtoValid
+    public QueryZhiFuRDto queryGongSi(@RequestBody QueryZhiFuDto dto) {
+        if (dto.size == null) {
+            dto.size = 50;
+        }
+
+        if (dto.page == null) {
+            dto.page = 0;
+        }
+
+        QueryZhiFuRDto rDto = new QueryZhiFuRDto();
+
+        // code
+        rDto.code = "1";
+
+        // data
+        Page<ZhiFu> result = mainService.queryZhiFu(dto.size, dto.page);
+
+        rDto.setData(
+                result.getContent().stream().map(record -> {
+                    QueryZhiFuRDto.Item item = new QueryZhiFuRDto.Item();
+                    item.id = record.getId();
+                    item.gongSiObjMingCheng = record.getGongSi().getMingCheng();
+                    item.riQi = record.getRiQi();
+                    item.jinE = record.getJinE();
+                    item.beiZhu = record.getBeiZhu();
+
+                    return item;
+                }).collect(Collectors.toList())
+        );
+
+        // ppPageInfo
+        rDto.setPpPageInfo(PPUtil.getPPPageInfo(result));
+
+        return rDto;
+    }
+
+    @Data
+    public static class QueryZhiFuDto {
+        @Min(0)
+        @Max(200)
+        Integer size;
+
+        @Min(0)
+        Integer page;
+    }
+
+    @Data
+    static class QueryZhiFuRDto {
+        @Data
+        static class Item {
+            Long id;
+            String gongSiObjMingCheng;
+            LocalDate riQi;
+            BigDecimal jinE;
+            String beiZhu;
+        }
+
+        String code;
+        List<Item> data;
+        PPPageInfo ppPageInfo;
+    }
+
     @ApiOperation(value = "新建支付", tags = {"Admin", "支付"})
     @RequestMapping(value = "/admin/createZhiFu", method = RequestMethod.POST)
     @DtoValid
@@ -647,7 +713,7 @@ public class MainController {
         rDto.id = zhiFu.getId();
         rDto.gongSiObjMingCheng = zhiFu.getGongSi().getMingCheng();
         rDto.riQi = zhiFu.getRiQi();
-        rDto.jinE = zhiFu.getJingE();
+        rDto.jinE = zhiFu.getJinE();
         rDto.beiZhu = zhiFu.getBeiZhu();
 
         return new PPOKRecord<>(rDto);

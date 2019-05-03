@@ -140,8 +140,6 @@ public class MainService {
 
     // -公司
 
-    // todo 用querydsl改写
-
     /**
      * 查询公司
      */
@@ -448,6 +446,24 @@ public class MainService {
     // -支付
 
     /**
+     * 查询支付
+     */
+    public Page<ZhiFu> queryZhiFu(Integer size, Integer page) {
+        BooleanExpression predicate = Expressions.asBoolean(true).isTrue();
+        JPAQueryFactory factory = new JPAQueryFactory(entityManager);
+
+        QZhiFu qZhiFu = QZhiFu.zhiFu;
+        JPAQuery<ZhiFu> jpaQuery = factory.select(qZhiFu)
+                .from(qZhiFu)
+                .where(predicate);
+
+        jpaQuery.orderBy(qZhiFu.gongSi.mingCheng.asc());
+        jpaQuery.orderBy(qZhiFu.riQi.desc());
+
+        return PPUtil.getPageResult(jpaQuery, size, page);
+    }
+
+    /**
      * 新建支付
      * <p>
      * 需要满足以下条件:
@@ -630,7 +646,7 @@ public class MainService {
             JSONObject jsonObject = new JSONObject();
 
             jsonObject.put("日期", zhifu.getRiQi());
-            jsonObject.put("金额", zhifu.getJingE());
+            jsonObject.put("金额", zhifu.getJinE());
             jsonObject.put("备注", zhifu.getBeiZhu());
 
             zhiFusJsonArray.put(jsonObject);
