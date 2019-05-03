@@ -28,7 +28,7 @@ public class TimesheetApplication {
     @PostConstruct
     void started()
     {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT+8"));
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
