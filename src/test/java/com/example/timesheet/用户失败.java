@@ -32,14 +32,14 @@ public class 用户失败 extends TimesheetApplicationTests {
 
     @Override
     public void initData() {
-
+        basicInitData();
     }
 
     @BeforeTransaction
     void bt() {
         if (!init) {
             init = true;
-            h2Service.restore("basicInitDB");
+            h2Service.restore("emptyDB");
             initData();
             h2Service.dump(dumpFileName);
 
