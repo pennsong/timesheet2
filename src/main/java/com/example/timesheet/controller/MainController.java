@@ -786,7 +786,7 @@ public class MainController {
                     item.id = record.getId();
                     item.kaiShi = record.getKaiShi();
                     item.jieShu = record.getJieShu();
-                    item.gongSiObjMingCheng = record.getYongHu().getYongHuMing();
+                    item.gongSiObjMingCheng = record.getXiangMu().getGongSi().getMingCheng();
                     item.xiangMuObjMingCheng = record.getXiangMu().getMingCheng();
                     item.yongHuObjYongHuMing = record.getYongHu().getYongHuMing();
                     item.beiZhu = record.getBeiZhu();
@@ -851,12 +851,14 @@ public class MainController {
             throw new PPValidateException(e.getMessage());
         }
 
-        // -成功生成报告后, 对应公司的结算日如小于报告结束日期, 则设置结算日为报告结束日期
-        GongSi gongSi = mainService.gainEntityWithExistsChecking(GongSi.class, dto.gongSiId);
-        if (gongSi.getJieSuanRi().isBefore(dto.jieShu)) {
-            gongSi.setJieSuanRi(dto.jieShu);
+        if (dto.setJiSuanRi == true) {
+            // -成功生成报告后, 对应公司的结算日如小于报告结束日期, 则设置结算日为报告结束日期
+            GongSi gongSi = mainService.gainEntityWithExistsChecking(GongSi.class, dto.gongSiId);
+            if (gongSi.getJieSuanRi().isBefore(dto.jieShu)) {
+                gongSi.setJieSuanRi(dto.jieShu);
+            }
+            // -
         }
-        // -
 
         return ppResponse.response(report);
     }
@@ -873,6 +875,9 @@ public class MainController {
 
         @NotNull
         LocalDate jieShu;
+
+        @NotNull
+        Boolean setJiSuanRi;
     }
     // -
 
@@ -903,6 +908,10 @@ public class MainController {
         for (GongZuoJiLuDto item : dto.data) {
             String yongHuMing = ((PPJson) (authentication.getPrincipal())).getString("yongHuMing");
 
+            if (!(yongHuMing.equals(item.yongHuMing))) {
+                throw new PPBusinessException("只能导入自己的工作记录!");
+            }
+
             mainService.createGongZuoJiLu(yongHuMing,
                     item.xiangMuMingCheng,
                     item.kaiShi,
@@ -928,6 +937,9 @@ public class MainController {
     public static class GongZuoJiLuDto {
         @NotBlank
         String xiangMuMingCheng;
+
+        @NotBlank
+        String yongHuMing;
 
         @NotNull
         LocalDateTime kaiShi;
@@ -991,7 +1003,7 @@ public class MainController {
                     item.id = record.getId();
                     item.kaiShi = record.getKaiShi();
                     item.jieShu = record.getJieShu();
-                    item.gongSiObjMngCheng = record.getYongHu().getYongHuMing();
+                    item.gongSiObjMingCheng = record.getXiangMu().getGongSi().getMingCheng();
                     item.xiangMuObjMingCheng = record.getXiangMu().getMingCheng();
                     item.yongHuObjYongHuMing = record.getYongHu().getYongHuMing();
                     item.beiZhu = record.getBeiZhu();
@@ -1033,7 +1045,7 @@ public class MainController {
             Long id;
             LocalDateTime kaiShi;
             LocalDateTime jieShu;
-            String gongSiObjMngCheng;
+            String gongSiObjMingCheng;
             String xiangMuObjMingCheng;
             String yongHuObjYongHuMing;
             String beiZhu;

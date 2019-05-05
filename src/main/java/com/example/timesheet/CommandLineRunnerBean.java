@@ -60,95 +60,95 @@ public class CommandLineRunnerBean implements CommandLineRunner {
             yongHuRepository.save(yongHu1);
         }
 
-        /*
-        用户
-        y1 2
-        y2 2
-        y3 2
-        */
-        YongHu y1 = mainService.createYongHu("Penn", "1234", new BigDecimal("2"));
-        YongHu y2 = mainService.createYongHu("Jay", "1234", new BigDecimal("2"));
-        YongHu y3 = mainService.createYongHu("y3", "1234", new BigDecimal("2"));
-
-       /*
-       公司
-       g1
-       g2
-       g3
-       */
-        GongSi g1 = mainService.createGongSi("g1");
-        GongSi g2 = mainService.createGongSi("g2");
-        GongSi g3 = mainService.createGongSi("g3");
-
-        /*
-        项目
-        g1x1 g1
-        [
-            {
-                y1,
-                xiaoShiFeiYong: [
-                    {
-                        MIN_DATE,
-                        2
-                    },
-                    {
-                        2000/1/1,
-                        4
-                    }
-                ],
-                y2,
-                xiaoShiFeiYong: [
-                    {
-                        MIN_DATE,
-                        2
-                    },
-                    {
-                        2000/1/1,
-                        4
-                    }
-                ]
-            }
-        ]
-        g1x2 g1
-        g2x1 g2
-        */
-        XiangMu g1x1 = mainService.createXiangMu("Red", g1.getId());
-        XiangMu g1x2 = mainService.createXiangMu("Power", g1.getId());
-        XiangMu g2x1 = mainService.createXiangMu("Gift", g2.getId());
-
-        mainService.addXiangMuChengYuan(g1x1.getId(), y1.getId());
-        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
-
-        mainService.addXiangMuChengYuan(g1x1.getId(), y2.getId());
-        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
-
-        mainService.addXiangMuChengYuan(g1x2.getId(), y1.getId());
-        mainService.addXiangMuChengYuan(g1x2.getId(), y2.getId());
-
-        mainService.addXiangMuChengYuan(g2x1.getId(), y1.getId());
-        mainService.addXiangMuChengYuan(g2x1.getId(), y2.getId());
-
-        /*
-        支付
-        2000/1/1 g1 100.0 testNote
-        */
-        mainService.createZhiFu(g1.getMingCheng(), LocalDate.of(2000, 1, 1), new BigDecimal("100"), "testNote");
-
-        /*
-        workRecord
-        g1x1 y1 2000/1/1 10:01 11:01 testWorkNote
-        */
-        for (int i = 0; i < 100; i++) {
-            LocalDateTime start =  LocalDateTime.of(2000, 1, 1, 0, 0);
-            mainService.createGongZuoJiLu(
-                    y1.getYongHuMing(),
-                    g1x1.getMingCheng(),
-                    start.plusMinutes(10 * i),
-                    start.plusMinutes(10 * i + 1),
-                    "testWorkNote"
-            );
-        }
-
-        log.info("init ok");
+//        /*
+//        用户
+//        y1 2
+//        y2 2
+//        y3 2
+//        */
+//        YongHu y1 = mainService.createYongHu("Penn", "1234", new BigDecimal("2"));
+//        YongHu y2 = mainService.createYongHu("Jay", "1234", new BigDecimal("2"));
+//        YongHu y3 = mainService.createYongHu("y3", "1234", new BigDecimal("2"));
+//
+//       /*
+//       公司
+//       g1
+//       g2
+//       g3
+//       */
+//        GongSi g1 = mainService.createGongSi("g1");
+//        GongSi g2 = mainService.createGongSi("g2");
+//        GongSi g3 = mainService.createGongSi("g3");
+//
+//        /*
+//        项目
+//        g1x1 g1
+//        [
+//            {
+//                y1,
+//                xiaoShiFeiYong: [
+//                    {
+//                        MIN_DATE,
+//                        2
+//                    },
+//                    {
+//                        2000/1/1,
+//                        4
+//                    }
+//                ],
+//                y2,
+//                xiaoShiFeiYong: [
+//                    {
+//                        MIN_DATE,
+//                        2
+//                    },
+//                    {
+//                        2000/1/1,
+//                        4
+//                    }
+//                ]
+//            }
+//        ]
+//        g1x2 g1
+//        g2x1 g2
+//        */
+//        XiangMu g1x1 = mainService.createXiangMu("Red", g1.getId());
+//        XiangMu g1x2 = mainService.createXiangMu("Power", g1.getId());
+//        XiangMu g2x1 = mainService.createXiangMu("Gift", g2.getId());
+//
+//        mainService.addXiangMuChengYuan(g1x1.getId(), y1.getId());
+//        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
+//
+//        mainService.addXiangMuChengYuan(g1x1.getId(), y2.getId());
+//        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
+//
+//        mainService.addXiangMuChengYuan(g1x2.getId(), y1.getId());
+//        mainService.addXiangMuChengYuan(g1x2.getId(), y2.getId());
+//
+//        mainService.addXiangMuChengYuan(g2x1.getId(), y1.getId());
+//        mainService.addXiangMuChengYuan(g2x1.getId(), y2.getId());
+//
+//        /*
+//        支付
+//        2000/1/1 g1 100.0 testNote
+//        */
+//        mainService.createZhiFu(g1.getMingCheng(), LocalDate.of(2000, 1, 1), new BigDecimal("100"), "testNote");
+//
+//        /*
+//        workRecord
+//        g1x1 y1 2000/1/1 10:01 11:01 testWorkNote
+//        */
+//        for (int i = 0; i < 100; i++) {
+//            LocalDateTime start =  LocalDateTime.of(2000, 1, 1, 0, 0);
+//            mainService.createGongZuoJiLu(
+//                    y1.getYongHuMing(),
+//                    g1x1.getMingCheng(),
+//                    start.plusMinutes(10 * i),
+//                    start.plusMinutes(10 * i + 1),
+//                    "testWorkNote"
+//            );
+//        }
+//
+//        log.info("init ok");
     }
 }
