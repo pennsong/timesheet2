@@ -32,100 +32,16 @@ public class Admin成功 extends TimesheetApplicationTests {
 
     @Override
     public void initData() {
-        // 如没有admin则新建admin
-        YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
-        if (yongHu == null) {
-            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), Arrays.asList("ADMIN"));
-            yongHuRepository.save(yongHu1);
-        }
 
-        /*
-        用户
-        y1 2
-        y2 2
-        y3 2
-        */
-        YongHu y1 = mainService.createYongHu("y1", "1234", new BigDecimal("2"));
-        YongHu y2 = mainService.createYongHu("y2", "1234", new BigDecimal("2"));
-        YongHu y3 = mainService.createYongHu("y3", "1234", new BigDecimal("2"));
-
-       /*
-       公司
-       g1
-       g2
-       g3
-       */
-        GongSi g1 = mainService.createGongSi("g1");
-        GongSi g2 = mainService.createGongSi("g2");
-        GongSi g3 = mainService.createGongSi("g3");
-
-        /*
-        项目
-        g1x1 g1
-        [
-            {
-                y1,
-                xiaoShiFeiYong: [
-                    {
-                        MIN_DATE,
-                        2
-                    },
-                    {
-                        2000/1/1,
-                        4
-                    }
-                ],
-                y2,
-                xiaoShiFeiYong: [
-                    {
-                        MIN_DATE,
-                        2
-                    },
-                    {
-                        2000/1/1,
-                        4
-                    }
-                ]
-            }
-        ]
-        g1x2 g1
-        g2x1 g2
-        */
-        XiangMu g1x1 = mainService.createXiangMu("g1x1", g1.getId());
-        XiangMu g1x2 = mainService.createXiangMu("g1x2", g1.getId());
-        XiangMu g2x1 = mainService.createXiangMu("g2x1", g2.getId());
-
-        mainService.addXiangMuChengYuan(g1x1.getId(), y1.getId());
-        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
-
-        mainService.addXiangMuChengYuan(g1x1.getId(), y2.getId());
-        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
-
-        /*
-        支付
-        2000/1/1 g1 100.0 testNote
-        */
-        mainService.createZhiFu(g1.getMingCheng(), LocalDate.of(2000, 1, 1), new BigDecimal("100"), "testNote");
-
-        /*
-        workRecord
-        g1x1 y1 2000/1/1 10:01 11:01 testWorkNote
-        */
-        mainService.createGongZuoJiLu(
-                y1.getYongHuMing(),
-                g1x1.getMingCheng(),
-                LocalDateTime.of(2000, 1, 1, 10, 1),
-                LocalDateTime.of(2000, 1, 1, 11, 1),
-                "testWorkNote"
-        );
     }
 
     @BeforeTransaction
     void bt() {
         if (!init) {
             init = true;
-            h2Service.restore("emptyDB");
+            h2Service.restore("basicInitDB");
             initData();
+            h2Service.dump(dumpFileName);
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -602,7 +518,8 @@ public class Admin成功 extends TimesheetApplicationTests {
                 "Admin",
                 "gongSiId, " + gongSi.getId(),
                 "kaiShi, 1900-01-01",
-                "jieShu, 2900-12-31"
+                "jieShu, 2900-12-31",
+                "setJiSuanRi, true"
         );
         checkCode(response, PPOK);
 

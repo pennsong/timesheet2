@@ -32,100 +32,16 @@ public class 用户失败 extends TimesheetApplicationTests {
 
     @Override
     public void initData() {
-        // 如没有admin则新建admin
-        YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
-        if (yongHu == null) {
-            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), Arrays.asList("ADMIN"));
-            yongHuRepository.save(yongHu1);
-        }
 
-        /*
-        用户
-        y1 2
-        y2 2
-        y3 2
-        */
-        YongHu y1 = mainService.createYongHu("y1", "1234", new BigDecimal("2"));
-        YongHu y2 = mainService.createYongHu("y2", "1234", new BigDecimal("2"));
-        YongHu y3 = mainService.createYongHu("y3", "1234", new BigDecimal("2"));
-
-       /*
-       公司
-       g1
-       g2
-       g3
-       */
-        GongSi g1 = mainService.createGongSi("g1");
-        GongSi g2 = mainService.createGongSi("g2");
-        GongSi g3 = mainService.createGongSi("g3");
-
-        /*
-        项目
-        g1x1 g1
-        [
-            {
-                y1,
-                xiaoShiFeiYong: [
-                    {
-                        MIN_DATE,
-                        2
-                    },
-                    {
-                        2000/1/1,
-                        4
-                    }
-                ],
-                y2,
-                xiaoShiFeiYong: [
-                    {
-                        MIN_DATE,
-                        2
-                    },
-                    {
-                        2000/1/1,
-                        4
-                    }
-                ]
-            }
-        ]
-        g1x2 g1
-        g2x1 g2
-        */
-        XiangMu g1x1 = mainService.createXiangMu("g1x1", g1.getId());
-        XiangMu g1x2 = mainService.createXiangMu("g1x2", g1.getId());
-        XiangMu g2x1 = mainService.createXiangMu("g2x1", g2.getId());
-
-        mainService.addXiangMuChengYuan(g1x1.getId(), y1.getId());
-        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
-
-        mainService.addXiangMuChengYuan(g1x1.getId(), y2.getId());
-        mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
-
-        /*
-        支付
-        2000/1/1 g1 100.0 testNote
-        */
-        mainService.createZhiFu(g1.getMingCheng(), LocalDate.of(2000, 1, 1), new BigDecimal("100"), "testNote");
-
-        /*
-        workRecord
-        g1x1 y1 2000/1/1 10:01 11:01 testWorkNote
-        */
-        mainService.createGongZuoJiLu(
-                y1.getYongHuMing(),
-                g1x1.getMingCheng(),
-                LocalDateTime.of(2000, 1, 1, 10, 1),
-                LocalDateTime.of(2000, 1, 1, 11, 1),
-                "testWorkNote"
-        );
     }
 
     @BeforeTransaction
     void bt() {
         if (!init) {
             init = true;
-            h2Service.restore("emptyDB");
+            h2Service.restore("basicInitDB");
             initData();
+            h2Service.dump(dumpFileName);
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -146,6 +62,7 @@ public class 用户失败 extends TimesheetApplicationTests {
     public void 导入本人工作记录_开始时间大于结束时间() {
         PPJson gongZuoJiLu1 = new PPJson();
         gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu1.put("yongHuMing", "y1");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T02:01");
         gongZuoJiLu1.put("jieShu", "2000-01-02T01:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
@@ -171,6 +88,7 @@ public class 用户失败 extends TimesheetApplicationTests {
     public void 导入本人工作记录_时间与已有同个用户的工作记录有重合1() {
         PPJson gongZuoJiLu1 = new PPJson();
         gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu1.put("yongHuMing", "y1");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T10:01");
         gongZuoJiLu1.put("jieShu", "2000-01-02T11:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
@@ -191,6 +109,7 @@ public class 用户失败 extends TimesheetApplicationTests {
 
         PPJson gongZuoJiLu2 = new PPJson();
         gongZuoJiLu2.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu2.put("yongHuMing", "y1");
         gongZuoJiLu2.put("kaiShi", "2000-01-02T10:00");
         gongZuoJiLu2.put("jieShu", "2000-01-02T10:01");
         gongZuoJiLu2.put("beiZhu", "testNote");
@@ -213,6 +132,7 @@ public class 用户失败 extends TimesheetApplicationTests {
     public void 导入本人工作记录_时间与已有同个用户的工作记录有重合2() {
         PPJson gongZuoJiLu1 = new PPJson();
         gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu1.put("yongHuMing", "y1");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T10:01");
         gongZuoJiLu1.put("jieShu", "2000-01-02T11:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
@@ -233,6 +153,7 @@ public class 用户失败 extends TimesheetApplicationTests {
 
         PPJson gongZuoJiLu2 = new PPJson();
         gongZuoJiLu2.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu2.put("yongHuMing", "y1");
         gongZuoJiLu2.put("kaiShi", "2000-01-02T11:01");
         gongZuoJiLu2.put("jieShu", "2000-01-02T11:02");
         gongZuoJiLu2.put("beiZhu", "testNote");
@@ -255,6 +176,7 @@ public class 用户失败 extends TimesheetApplicationTests {
     public void 导入本人工作记录_时间与已有同个用户的工作记录有重合3() {
         PPJson gongZuoJiLu1 = new PPJson();
         gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu1.put("yongHuMing", "y1");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T10:01");
         gongZuoJiLu1.put("jieShu", "2000-01-02T11:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
@@ -275,6 +197,7 @@ public class 用户失败 extends TimesheetApplicationTests {
 
         PPJson gongZuoJiLu2 = new PPJson();
         gongZuoJiLu2.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu2.put("yongHuMing", "y1");
         gongZuoJiLu2.put("kaiShi", "2000-01-02T10:01");
         gongZuoJiLu2.put("jieShu", "2000-01-02T11:00");
         gongZuoJiLu2.put("beiZhu", "testNote");
@@ -297,6 +220,7 @@ public class 用户失败 extends TimesheetApplicationTests {
     public void 导入本人工作记录_时间与已有同个用户的工作记录有重合4() {
         PPJson gongZuoJiLu1 = new PPJson();
         gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu1.put("yongHuMing", "y1");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T10:01");
         gongZuoJiLu1.put("jieShu", "2000-01-02T11:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
@@ -317,6 +241,7 @@ public class 用户失败 extends TimesheetApplicationTests {
 
         PPJson gongZuoJiLu2 = new PPJson();
         gongZuoJiLu2.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu2.put("yongHuMing", "y1");
         gongZuoJiLu2.put("kaiShi", "2000-01-02T10:00");
         gongZuoJiLu2.put("jieShu", "2000-01-02T11:02");
         gongZuoJiLu2.put("beiZhu", "testNote");
@@ -340,6 +265,7 @@ public class 用户失败 extends TimesheetApplicationTests {
     public void 导入本人工作记录_项目名不存在() {
         PPJson gongZuoJiLu1 = new PPJson();
         gongZuoJiLu1.put("xiangMuMingCheng", "none");
+        gongZuoJiLu1.put("yongHuMing", "y1");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T10:01");
         gongZuoJiLu1.put("jieShu", "2000-01-02T11:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
@@ -363,6 +289,7 @@ public class 用户失败 extends TimesheetApplicationTests {
     public void 导入用户工作记录_用户不是项目成员() {
         PPJson gongZuoJiLu1 = new PPJson();
         gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu1.put("yongHuMing", "y3");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T10:01");
         gongZuoJiLu1.put("jieShu", "2000-01-02T11:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
@@ -400,6 +327,7 @@ public class 用户失败 extends TimesheetApplicationTests {
         PPJson gongZuoJiLu1 = new PPJson();
 
         gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu1.put("yongHuMing", "y1");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T10:01");
         gongZuoJiLu1.put("jieShu", "2000-01-02T11:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
@@ -422,6 +350,7 @@ public class 用户失败 extends TimesheetApplicationTests {
         gongZuoJiLu1 = new PPJson();
 
         gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu1.put("yongHuMing", "y1");
         gongZuoJiLu1.put("kaiShi", "2000-01-01T00:01");
         gongZuoJiLu1.put("jieShu", "2000-01-01T01:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
