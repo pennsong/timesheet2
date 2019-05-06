@@ -9,15 +9,11 @@ import org.json.JSONObject;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 import org.springframework.http.*;
-import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.transaction.BeforeTransaction;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
@@ -39,9 +35,9 @@ public class Admin成功 extends TimesheetApplicationTests {
     void bt() {
         if (!init) {
             init = true;
-            h2Service.restore("emptyDB");
+            dbService.restore("emptyDB");
             initData();
-            h2Service.dump(dumpFileName);
+            dbService.dump(dumpFileName);
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -52,7 +48,7 @@ public class Admin成功 extends TimesheetApplicationTests {
                 jwts.put("y" + i, cookie);
             }
         } else {
-            h2Service.restore(dumpFileName);
+            dbService.restore(dumpFileName);
         }
     }
 

@@ -4,6 +4,7 @@ import com.example.timesheet.model.GongSi;
 import com.example.timesheet.model.XiangMu;
 import com.example.timesheet.model.YongHu;
 import com.example.timesheet.repository.*;
+import com.example.timesheet.service.DBService;
 import com.example.timesheet.service.H2Service;
 import com.example.timesheet.service.MainService;
 import com.example.timesheet.service.PPResponse;
@@ -68,7 +69,7 @@ public abstract class TimesheetApplicationTests {
     private int port;
 
     @Autowired
-    protected H2Service h2Service;
+    protected DBService dbService;
 
     @Autowired
     protected PPResponse ppResponse;

@@ -8,18 +8,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.springframework.http.*;
-import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Admin复杂成功 extends TimesheetApplicationTests {
@@ -36,9 +32,9 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
     void bt() {
         if (!init) {
             init = true;
-            h2Service.restore("emptyDB");
+            dbService.restore("emptyDB");
             initData();
-            h2Service.dump(dumpFileName);
+            dbService.dump(dumpFileName);
 
             // 获取登录cookies
             String cookie = login("Admin", "1234");
@@ -49,7 +45,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
                 jwts.put("y" + i, cookie);
             }
         } else {
-            h2Service.restore(dumpFileName);
+            dbService.restore(dumpFileName);
         }
     }
 

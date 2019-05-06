@@ -7,6 +7,7 @@ import com.example.timesheet.repository.GongSiRepository;
 import com.example.timesheet.repository.GongZuoJiLuRepository;
 import com.example.timesheet.repository.XiangMuRepository;
 import com.example.timesheet.repository.YongHuRepository;
+import com.example.timesheet.service.DBService;
 import com.example.timesheet.service.H2Service;
 import com.example.timesheet.service.MainService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,7 @@ import java.util.Arrays;
 @Transactional
 public class CommandLineRunnerBean implements CommandLineRunner {
     @Autowired
-    private H2Service h2Service;
+    private DBService h2Service;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -54,5 +55,12 @@ public class CommandLineRunnerBean implements CommandLineRunner {
     public void run(String... args) throws InterruptedException {
         h2Service.dump("emptyDB");
         log.info("dump emptyDB ok");
+        // 如没有admin则新建admin
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
+        if (yongHu == null) {
+            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), Arrays.asList("ADMIN"));
+            yongHuRepository.save(yongHu1);
+        }
+
     }
 }
