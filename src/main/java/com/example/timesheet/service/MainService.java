@@ -631,6 +631,7 @@ public class MainService {
                 jsonObject.put("耗时", (new BigDecimal("" + duration.getSeconds())).divide(new BigDecimal("" + 3600), MathContext.DECIMAL128));
                 jsonObject.put("小时费用", xiaoShiFeiYong);
                 jsonObject.put("费用", cost);
+                jsonObject.put("备注", gongZuoJiLu.getBeiZhu());
 
                 gongZuoJiLusJsonArray.put(jsonObject);
             }
