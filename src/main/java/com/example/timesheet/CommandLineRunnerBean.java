@@ -61,18 +61,5 @@ public class CommandLineRunnerBean implements CommandLineRunner {
             YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), Arrays.asList("ADMIN"));
             yongHuRepository.save(yongHu1);
         }
-
-        YongHu y1 = mainService.createYongHu("Penn", "1234", new BigDecimal("500"));
-        YongHu y2 = mainService.createYongHu("Jimi", "1234", new BigDecimal("500"));
-        YongHu y3 = mainService.createYongHu("Jay", "1234", new BigDecimal("500"));
-        YongHu y4 = mainService.createYongHu("Tracy", "1234", new BigDecimal("500"));
-        YongHu y5 = mainService.createYongHu("Jin", "1234", new BigDecimal("500"));
-        YongHu y6 = mainService.createYongHu("Fan", "1234", new BigDecimal("500"));
-
-        GongSi g1 = mainService.createGongSi("立派");
-        GongSi g2 = mainService.createGongSi("量子健康");
-        GongSi g3 = mainService.createGongSi("Harvey公司");
-        GongSi g4 = mainService.createGongSi("磐哲");
-
     }
 }
