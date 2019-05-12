@@ -68,8 +68,8 @@ public class GongZuoJiLu extends PPEntityTypeValidatableAbstract {
      */
     @Override
     public void validate() {
-        // 在按天拆分的时候, 开始时间有可能等于结束时间(2000-01-01T00:00 TO 2000-01-01T00:00)
-        if (kaiShi.isAfter(jieShu)) {
+      	// 结束时间必定大于开始时间
+        if (kaiShi.isAfter(jieShu) || kaiShi.isEqual(jieShu)) {
             throw new PPBusinessException("导入工作记录的结束时间要大于开始时间!");
         }
     }

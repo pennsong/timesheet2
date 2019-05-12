@@ -27,3 +27,6 @@ HELP.md
 
 ### VS Code ###
 .vscode/
+
+### Test Resource ###
+/src/test/resources

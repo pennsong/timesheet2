@@ -93,6 +93,9 @@ public abstract class TimesheetApplicationTests {
     protected ZhiFuRepository zhiFuRepository;
 
     @Autowired
+    protected TiChengRepository tiChengRepository;
+    
+    @Autowired
     protected GongZuoJiLuRepository gongZuoJiLuRepository;
 
     @Autowired
@@ -175,7 +178,7 @@ public abstract class TimesheetApplicationTests {
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
-            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), Arrays.asList("ADMIN"));
+            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), new BigDecimal("50"), null, Arrays.asList("ADMIN"));
             yongHuRepository.save(yongHu1);
         }
 
@@ -185,9 +188,9 @@ public abstract class TimesheetApplicationTests {
         y2 2
         y3 2
         */
-        YongHu y1 = mainService.createYongHu("y1", "1234", new BigDecimal("2"));
-        YongHu y2 = mainService.createYongHu("y2", "1234", new BigDecimal("2"));
-        YongHu y3 = mainService.createYongHu("y3", "1234", new BigDecimal("2"));
+        YongHu y1 = mainService.createYongHu("y1", "1234", new BigDecimal("2"), new BigDecimal("1"));
+        YongHu y2 = mainService.createYongHu("y2", "1234", new BigDecimal("2"), new BigDecimal("1"));
+        YongHu y3 = mainService.createYongHu("y3", "1234", new BigDecimal("2"), new BigDecimal("1"));
 
        /*
        公司
@@ -237,9 +240,11 @@ public abstract class TimesheetApplicationTests {
 
         mainService.addXiangMuChengYuan(g1x1.getId(), y1.getId());
         mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
+        mainService.addXiangMuTiChengBiaoZhun(g1x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("2"));
 
         mainService.addXiangMuChengYuan(g1x1.getId(), y2.getId());
         mainService.addXiangMuJiFeiBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
+        mainService.addXiangMuTiChengBiaoZhun(g1x1.getId(), y2.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("2"));
 
         /*
         支付
@@ -258,5 +263,11 @@ public abstract class TimesheetApplicationTests {
                 LocalDateTime.of(2000, 1, 1, 11, 1),
                 "testWorkNote"
         );
+        
+        /*
+        提成
+        2000/1/3 y1 1 testNote
+        */
+        mainService.createTiCheng(y1.getYongHuMing(), LocalDate.of(2000, 1, 3), new BigDecimal("1"), "testNote");
     }
 }

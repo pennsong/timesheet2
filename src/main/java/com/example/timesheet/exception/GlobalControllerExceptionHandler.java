@@ -27,7 +27,6 @@ public class GlobalControllerExceptionHandler {
     public String handleBadRequest(HttpServletRequest req, Exception ex) throws JSONException {
         JSONObject jsonObject = new JSONObject();
         String customMessage = null;
-
         if (ex instanceof PPBusinessException) {
             jsonObject.put("code", "1000");
         } else if (ex instanceof PPDeleteReferenceException) {

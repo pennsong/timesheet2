@@ -37,7 +37,7 @@ public class GongSi extends PPEntityTypeValidatableAbstract {
     private String mingCheng;
 
     /**
-     * 结算日
+     * 结算日，结算当天的工作记录一并冻结
      */
     @Setter
     private LocalDate jieSuanRi;
