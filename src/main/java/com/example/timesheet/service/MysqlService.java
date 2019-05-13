@@ -40,12 +40,13 @@ public class MysqlService implements DBService {
 
     public void dump(String name) {
     	    String OS = System.getProperty("os.name").toLowerCase();
-    	    String[] executeCmd = new String[] { mysqldump, "-u" + username, "-p" + password, "--add-drop-database", 
+    	    // default linux
+    	    String[] executeCmd = new String[] { "/bin/sh", "-c", mysqldump, "-u" + username, "-p" + password, "--add-drop-database", 
 					"-B", "timesheet", "-r", "src/test/resources/" + name + ".sql" };
     	    if(OS.startsWith("win")) {
     	    		executeCmd = new String[] { "cmd", "/c", mysqldump, "-u" + username, "-p" + password, "--add-drop-database", 
     						"-B", "timesheet", "-r", "src/test/resources/" + name + ".sql" };
-    	    } else if(OS.startsWith("mac os")) {
+    	    } else if(OS.startsWith("mac os")){
     			executeCmd = new String[] { mysqldump, "-u" + username, "-p" + password, "--add-drop-database", 
     					"-B", "timesheet", "-r", "src/test/resources/" + name + ".sql" };
         	}
@@ -68,7 +69,8 @@ public class MysqlService implements DBService {
 
     public void restore(String name) {
     		String OS = System.getProperty("os.name").toLowerCase();
-	    String[] executeCmd = new String[]{ mysql, "--user=" + username, "--password=" + password, "-e", "source " + "src/test/resources/" + name + ".sql"};
+    		// default linux
+	    String[] executeCmd = new String[]{ "/bin/sh", "-c", mysql, "--user=" + username, "--password=" + password, "-e", "source " + "src/test/resources/" + name + ".sql"};
 	    if(OS.startsWith("win")) {
 	    		executeCmd = new String[] { "cmd", "/c", mysql, "--user=" + username, "--password=" + password, "-e", "source " + "src/test/resources/" + name + ".sql" };
 	    } else if(OS.startsWith("mac os")) {
