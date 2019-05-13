@@ -24,6 +24,10 @@ public class MysqlService implements DBService {
     
     @Getter
     @Setter
+    private String databasename;
+    
+    @Getter
+    @Setter
     private String username;
     
     @Getter
@@ -42,13 +46,13 @@ public class MysqlService implements DBService {
     	    String OS = System.getProperty("os.name").toLowerCase();
     	    // default linux
     	    String[] executeCmd = new String[] { "/bin/sh", "-c", mysqldump, "-u" + username, "-p" + password, "--add-drop-database", 
-					"-B", "timesheet", "-r", "src/test/resources/" + name + ".sql" };
+					"-B", databasename, "-r", "src/test/resources/" + name + ".sql" };
     	    if(OS.startsWith("win")) {
     	    		executeCmd = new String[] { "cmd", "/c", mysqldump, "-u" + username, "-p" + password, "--add-drop-database", 
-    						"-B", "timesheet", "-r", "src/test/resources/" + name + ".sql" };
+    						"-B", databasename, "-r", "src/test/resources/" + name + ".sql" };
     	    } else if(OS.startsWith("mac os")){
     			executeCmd = new String[] { mysqldump, "-u" + username, "-p" + password, "--add-drop-database", 
-    					"-B", "timesheet", "-r", "src/test/resources/" + name + ".sql" };
+    					"-B", databasename, "-r", "src/test/resources/" + name + ".sql" };
         	}
         
         log.info("Exec: "+ String.join(" ", executeCmd));

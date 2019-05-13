@@ -12,8 +12,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.springframework.http.*;
+import org.springframework.test.context.transaction.AfterTransaction;
 import org.springframework.test.context.transaction.BeforeTransaction;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -49,6 +49,10 @@ public class 测试案例 extends TimesheetApplicationTests {
         } else {
             dbService.restore(dumpFileName);
         }
+    }
+    @AfterTransaction
+    void at() {
+    		dbService.restore("emptyDB");
     }
 
     // 正式测试案例开始
