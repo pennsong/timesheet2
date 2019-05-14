@@ -58,7 +58,7 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
      * 小时提成
      */
     @NotNull
-    @DecimalMin(value = "0", inclusive = false)
+    @DecimalMin(value = "0", inclusive = true)
     @Setter
     private BigDecimal xiaoShiTiCheng;
     

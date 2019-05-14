@@ -154,7 +154,7 @@ public class MainController {
         
         @ApiModelProperty(notes = "小时提成", required = true, position = 4)
         @NotNull
-        @DecimalMin(value = "0", inclusive = false)
+        @DecimalMin(value = "0", inclusive = true)
         BigDecimal xiaoShiTiCheng;
     }
 
