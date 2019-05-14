@@ -53,6 +53,27 @@ public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetai
     @DecimalMin(value = "0", inclusive = false)
     @Setter
     private BigDecimal xiaoShiFeiYong;
+    
+    /**
+     * 小时提成
+     */
+    @NotNull
+    @DecimalMin(value = "0", inclusive = false)
+    @Setter
+    private BigDecimal xiaoShiTiCheng;
+    
+    /**
+     * 结算日，结算当天的工作记录一并冻结
+     */
+    @Setter
+    private LocalDate jieSuanRi;
+    
+    /**
+     * 如果jieSuanRi为null则返回MIN_DATE
+     */
+    public LocalDate getJieSuanRi() {
+        return jieSuanRi == null ? PPUtil.MIN_DATE : jieSuanRi;
+    }
 
     @ElementCollection
     @NotEmpty

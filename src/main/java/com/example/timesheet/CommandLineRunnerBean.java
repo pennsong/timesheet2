@@ -58,7 +58,7 @@ public class CommandLineRunnerBean implements CommandLineRunner {
         // 如没有admin则新建admin
         YongHu yongHu = yongHuRepository.findOneByYongHuMing("Admin");
         if (yongHu == null) {
-            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), Arrays.asList("ADMIN"));
+            YongHu yongHu1 = new YongHu(null, "Admin", passwordEncoder.encode("1234"), new BigDecimal("500"), new BigDecimal("50"), null, Arrays.asList("ADMIN"));
             yongHuRepository.save(yongHu1);
         }
     }

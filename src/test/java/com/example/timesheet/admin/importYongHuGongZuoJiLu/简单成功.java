@@ -1,5 +1,6 @@
-package com.example.timesheet;
+package com.example.timesheet.admin.importYongHuGongZuoJiLu;
 
+import com.example.timesheet.TimesheetApplicationTests;
 import com.example.timesheet.model.*;
 import com.example.timesheet.util.PPJson;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +20,16 @@ import java.util.stream.StreamSupport;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class 用户成功 extends TimesheetApplicationTests {
-    private static boolean init = false;
+public class 简单成功 extends TimesheetApplicationTests {
+	private static boolean init = false;
 
-    private static String dumpFileName = "yongHuChengGong";
+    private static String dumpFileName = "admin.importYongHuGongZuoJiLu.JianDanChengGong";
 
     @Override
     public void initData() {
         basicInitData();
     }
-
+    
     @BeforeTransaction
     void bt() {
         if (!init) {
@@ -51,54 +52,41 @@ public class 用户成功 extends TimesheetApplicationTests {
     }
 
     // 正式测试案例开始
-
     @Test
-    public void 设置当前用户密码() {
-        YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
-
-        ResponseEntity<String> response = request(
-                "/changePassword",
-                HttpMethod.POST,
-                "y1",
-                "password, 5678"
-        );
-        checkCode(response, PPOK);
-
-        PPJson ppJson = new PPJson();
-        ppJson.put("username", "y1");
-        ppJson.put("password", "5678");
-
-        HttpEntity<String> response1 = testRestTemplate.postForEntity("/login", ppJson.toString(), String.class);
-        Assert.assertEquals(HttpStatus.OK, ((ResponseEntity<String>) response1).getStatusCode());
-    }
-
-    @Test
-    public void 导入本人工作记录() {
+    public void 导入用户工作记录() {
         PPJson gongZuoJiLu1 = new PPJson();
-        gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
         gongZuoJiLu1.put("yongHuMing", "y1");
+        gongZuoJiLu1.put("xiangMuMingCheng", "g1x1");
         gongZuoJiLu1.put("kaiShi", "2000-01-02T00:00");
         gongZuoJiLu1.put("jieShu", "2000-01-02T01:01");
         gongZuoJiLu1.put("beiZhu", "testNote");
 
         PPJson gongZuoJiLu2 = new PPJson();
-        gongZuoJiLu2.put("xiangMuMingCheng", "g1x1");
         gongZuoJiLu2.put("yongHuMing", "y1");
+        gongZuoJiLu2.put("xiangMuMingCheng", "g1x1");
         gongZuoJiLu2.put("kaiShi", "2000-01-03T00:00");
         gongZuoJiLu2.put("jieShu", "2000-01-04T00:00");
         gongZuoJiLu2.put("beiZhu", "testNote");
+        
+        PPJson gongZuoJiLu3 = new PPJson();
+        gongZuoJiLu3.put("yongHuMing", "y1");
+        gongZuoJiLu3.put("xiangMuMingCheng", "g1x1");
+        gongZuoJiLu3.put("kaiShi", "2000-01-04T00:00");
+        gongZuoJiLu3.put("jieShu", "2000-01-05T10:00");
+        gongZuoJiLu3.put("beiZhu", "testNote");
 
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(gongZuoJiLu1);
         jsonArray.put(gongZuoJiLu2);
+        jsonArray.put(gongZuoJiLu3);
 
         PPJson ppJson = new PPJson();
         ppJson.put("data", jsonArray);
 
         ResponseEntity<String> response = request(
-                "/importGongZuoJiLu",
+                "/admin/importYongHuGongZuoJiLu",
                 HttpMethod.POST,
-                "y1",
+                "Admin",
                 ppJson
         );
         checkCode(response, PPOK);
@@ -114,25 +102,9 @@ public class 用户成功 extends TimesheetApplicationTests {
                                 &&
                                 item.getXiangMu().getMingCheng().equals("g1x1")
                                 &&
-                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 2, 0, 0))
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 2, 0, 0, 0))
                                 &&
-                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 2, 1, 1))
-                                &&
-                                item.getBeiZhu().equals("testNote")
-                );
-
-        Assert.assertTrue(result);
-
-        result = StreamSupport
-                .stream(gongZuoJiLus.spliterator(), false)
-                .anyMatch(
-                        item -> item.getYongHu().getYongHuMing().equals("y1")
-                                &&
-                                item.getXiangMu().getMingCheng().equals("g1x1")
-                                &&
-                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 3, 0, 0))
-                                &&
-                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 3, 23, 59, 59))
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 2, 1, 1, 0))
                                 &&
                                 item.getBeiZhu().equals("testNote")
                 );
@@ -146,52 +118,45 @@ public class 用户成功 extends TimesheetApplicationTests {
                                 &&
                                 item.getXiangMu().getMingCheng().equals("g1x1")
                                 &&
-                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 4, 0, 0))
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 3, 0, 0, 0))
                                 &&
-                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 4, 0, 0))
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 4, 0, 0, 0))
                                 &&
                                 item.getBeiZhu().equals("testNote")
                 );
 
         Assert.assertTrue(result);
-    }
 
-    @Test
-    public void 删除本人工作记录() {
-        Optional<GongZuoJiLu> gongZuoJiLuOptional = StreamSupport.stream(gongZuoJiLuRepository.findAll().spliterator(), false)
-                .filter(item -> item.getYongHu().getYongHuMing().equals("y1"))
-                .findFirst();
+        result = StreamSupport
+                .stream(gongZuoJiLus.spliterator(), false)
+                .anyMatch(
+                        item -> item.getYongHu().getYongHuMing().equals("y1")
+                                &&
+                                item.getXiangMu().getMingCheng().equals("g1x1")
+                                &&
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 4, 0, 0, 0))
+                                &&
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 5, 0, 0, 0))
+                                &&
+                                item.getBeiZhu().equals("testNote")
+                );
 
-        Long id = gongZuoJiLuOptional.get().getId();
+        Assert.assertTrue(result);
+        
+        result = StreamSupport
+                .stream(gongZuoJiLus.spliterator(), false)
+                .anyMatch(
+                        item -> item.getYongHu().getYongHuMing().equals("y1")
+                                &&
+                                item.getXiangMu().getMingCheng().equals("g1x1")
+                                &&
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 5, 0, 0, 0))
+                                &&
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 5, 10, 0, 0))
+                                &&
+                                item.getBeiZhu().equals("testNote")
+                );
 
-        ResponseEntity<String> response = request(
-                "/deleteGongZuoJiLu/" + id ,
-                HttpMethod.DELETE,
-                "y1"
-        );
-        checkCode(response, PPOK);
-
-        // 清空当前repository以从数据库获取最新数据
-        entityManager.clear();
-
-        gongZuoJiLuOptional = gongZuoJiLuRepository.findById(id);
-        Assert.assertFalse(gongZuoJiLuOptional.isPresent());
-    }
-
-    @Test
-    public void 查询自己的工作记录() throws JSONException {
-        ResponseEntity<String> response = request(
-                "/queryGongZuoJiLu" ,
-                HttpMethod.POST,
-                "y1"
-        );
-        checkCode(response, PPOK);
-
-        JSONObject jsonObject = new JSONObject(response.getBody());
-        Assert.assertEquals("g1x1", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("xiangMuObjMingCheng"));
-        Assert.assertEquals("y1", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("yongHuObjYongHuMing"));
-        Assert.assertEquals("2000-01-01T10:01:00", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("kaiShi"));
-        Assert.assertEquals("2000-01-01T11:01:00", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("jieShu"));
-        Assert.assertEquals("testWorkNote", new JSONObject(response.getBody()).getJSONArray("data").getJSONObject(0).get("beiZhu"));
+        Assert.assertTrue(result);
     }
 }

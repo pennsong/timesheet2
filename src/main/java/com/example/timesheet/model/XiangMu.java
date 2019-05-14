@@ -58,13 +58,29 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
     public List<JiFeiBiaoZhun> getJiFeiBiaoZhuns() {
         return jiFeiBiaoZhuns.stream().collect(Collectors.toList());
     }
+    
+    /**
+     * 提成标准列表
+     */
+    @ElementCollection
+    @Valid
+    @OrderBy("kaiShi DESC")
+    private List<TiChengBiaoZhun> tiChengBiaoZhuns;
+
+    /**
+     * 获取提成标准列表副本
+     */
+    public List<TiChengBiaoZhun> getTiChengBiaoZhuns() {
+        return tiChengBiaoZhuns.stream().collect(Collectors.toList());
+    }
 
     /**
      * 添加成员
      * <p>
      * 1) 如果成员已存在, 则抛异常<br>
      * 2) 把用户的小时费用作为成员的默认小时费用<br>
-     * 3) MIN_DATE为默认开始时间
+     * 3) 把用户的小时提成作为成员的默认小时提成<br>
+     * 4) MIN_DATE为默认开始时间
      *
      * @param yongHu 成员用户
      */
@@ -78,6 +94,9 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
         JiFeiBiaoZhun jiFeiBiaoZhun = new JiFeiBiaoZhun(yongHu, PPUtil.MIN_DATE, yongHu.getXiaoShiFeiYong());
 
         jiFeiBiaoZhuns.add(jiFeiBiaoZhun);
+        
+        TiChengBiaoZhun tiChengBiaoZhun = new TiChengBiaoZhun(yongHu, PPUtil.MIN_DATE, yongHu.getXiaoShiTiCheng());
+        tiChengBiaoZhuns.add(tiChengBiaoZhun);
     }
 
     /**
@@ -91,26 +110,32 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
      */
     public void removeChengYuan(YongHu yongHu) {
         List<JiFeiBiaoZhun> result = jiFeiBiaoZhuns.stream().filter(item -> item.getYongHu().getId().compareTo(yongHu.getId()) == 0).collect(Collectors.toList());
-
+        List<TiChengBiaoZhun> result2 = tiChengBiaoZhuns.stream().filter(item -> item.getYongHu().getId().compareTo(yongHu.getId()) == 0).collect(Collectors.toList());
+        
         // -如果成员不存在, 则抛异常
-        if (result.isEmpty()) {
+        if (result.isEmpty() || result2.isEmpty()) {
             throw new PPBusinessException("此用户不是此项目成员, 不能移除!");
         }
         // -
 
         jiFeiBiaoZhuns.removeAll(result);
+        tiChengBiaoZhuns.removeAll(result2);
     }
 
     /**
      * 添加计费标准
      * <p>
-     * 1) 如果存在此成员的同一日期的计费标准则替换原来的<br>
-     * 2) 如果日期早于或等于项目所属公司的结算日, 则抛异常, 不允许添加<br>
+     * 1) 如果日期早于或等于项目所属公司的结算日, 则抛异常, 不允许添加<br>
+     * 2) 如果存在此成员的同一日期的计费标准则替换原来的<br>
      * 不过这个检查需要用到多个Aggregator, 所以放到Service里
      *
      * @param jiFeiBiaoZhun 待添加计费标准
      */
     public void addJiFeiBiaoZhun(JiFeiBiaoZhun jiFeiBiaoZhun) {
+      	// -如果日期早于或等于项目所属公司的结算日, 则抛异常, 不允许添加
+        if(jiFeiBiaoZhun.getKaiShi().isBefore(gongSi.getJieSuanRi()) || jiFeiBiaoZhun.getKaiShi().isEqual(gongSi.getJieSuanRi())) {
+           	throw new PPBusinessException("计费标准开始日期早于或等于公司结算日期，不可添加！");
+        }
         // -如果存在此成员的同一日期的计费标准则替换原来的
         Optional<JiFeiBiaoZhun> existRecord = jiFeiBiaoZhuns
                 .stream()
@@ -136,6 +161,10 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
      * @param kaiShi 待移除计费标准开始日期
      */
     public void removeJiFeiBiaoZhun(YongHu yongHu, LocalDate kaiShi) {
+      	// -如果日期早于或等于项目所属公司的结算日, 则抛异常, 不允许移除
+	    if(kaiShi.isBefore(gongSi.getJieSuanRi()) || kaiShi.isEqual(gongSi.getJieSuanRi())) {
+	    	    throw new PPBusinessException("计费标准开始日期早于或等于公司结算日期，不可移除！");
+	    }
         Optional<JiFeiBiaoZhun> existRecord = jiFeiBiaoZhuns
                 .stream()
                 .filter(
@@ -146,6 +175,62 @@ public class XiangMu extends PPEntityTypeValidatableAbstract {
             jiFeiBiaoZhuns.remove(existRecord.get());
         } else {
             throw new PPBusinessException("没有找到复合条件的项目计费标准, 无法移除!");
+        }
+    }
+    
+    /**
+     * 添加提成标准
+     * <p>
+     * 1) 如果日期早于或等于用户个人结算日, 则抛异常, 不允许添加<br>
+     * 2) 如果存在此成员的同一日期的提成标准则替换原来的<br>
+     * 不过这个检查需要用到多个Aggregator, 所以放到Service里
+     *
+     * @param tiChengBiaoZhun 待添加提成标准
+     */
+    public void addTiChengBiaoZhun(TiChengBiaoZhun tiChengBiaoZhun) {
+    	    // -如果日期早于或等于用户个人的结算日, 则抛异常, 不允许添加
+        if(tiChengBiaoZhun.getKaiShi().isBefore(tiChengBiaoZhun.getYongHu().getJieSuanRi()) || tiChengBiaoZhun.getKaiShi().isEqual(tiChengBiaoZhun.getYongHu().getJieSuanRi())) {
+           	throw new PPBusinessException("提成标准开始日期早于或等于用户个人结算日期，不可添加！");
+        }
+        // -如果存在此成员的同一日期的提成标准则替换原来的
+        Optional<TiChengBiaoZhun> existRecord = tiChengBiaoZhuns
+                .stream()
+                .filter(
+                        item -> (item.getYongHu().getId().compareTo(tiChengBiaoZhun.getYongHu().getId()) == 0 && item.getKaiShi().isEqual(tiChengBiaoZhun.getKaiShi()))
+                ).findFirst();
+
+        if (existRecord.isPresent()) {
+            tiChengBiaoZhuns.remove(existRecord.get());
+        }
+        // -
+
+        tiChengBiaoZhuns.add(tiChengBiaoZhun);
+    }
+
+    /**
+     * 移除提成标准
+     * <p>
+     * 1) 如果日期早于或等于用户个人的结算日, 则抛异常, 不允许移除<br>
+     * 不过这个检查需要用到多个Aggregator, 所以放到Service里
+     *
+     * @param yongHu 待移除提成标准所属用户
+     * @param kaiShi 待移除提成标准开始日期
+     */
+    public void removeTiChengBiaoZhun(YongHu yongHu, LocalDate kaiShi) {
+      	// -如果日期早于或等于用户个人的结算日, 则抛异常, 不允许移除
+	    if(kaiShi.isBefore(yongHu.getJieSuanRi()) || kaiShi.isEqual(yongHu.getJieSuanRi())) {
+	    	    throw new PPBusinessException("计费标准开始日期早于或等于用户个人结算日期，不可移除！");
+	    }
+        Optional<TiChengBiaoZhun> existRecord = tiChengBiaoZhuns
+                .stream()
+                .filter(
+                        item -> (item.getYongHu().getId().compareTo(yongHu.getId()) == 0 && item.getKaiShi().isEqual(kaiShi))
+                ).findFirst();
+
+        if (existRecord.isPresent()) {
+            tiChengBiaoZhuns.remove(existRecord.get());
+        } else {
+            throw new PPBusinessException("没有找到复合条件的项目提成标准, 无法移除!");
         }
     }
 

@@ -1,9 +1,9 @@
-package com.example.timesheet;
+package com.example.timesheet.admin.generateBaoGao;
 
-import com.example.timesheet.model.GongSi;
-import com.example.timesheet.model.XiangMu;
-import com.example.timesheet.model.YongHu;
+import com.example.timesheet.TimesheetApplicationTests;
+import com.example.timesheet.model.*;
 import com.example.timesheet.util.PPJson;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,20 +14,23 @@ import org.junit.runners.MethodSorters;
 import org.springframework.http.*;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
 
+@Slf4j
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Admin复杂成功 extends TimesheetApplicationTests {
-    private static boolean init = false;
+public class 复杂成功 extends TimesheetApplicationTests {
+	private static boolean init = false;
 
-    private static String dumpFileName = "adminFuZaChengGong";
+    private static String dumpFileName = "admin.generateBaoGao.FuZaChengGong";
 
     @Override
     public void initData() {
         basicInitData();
     }
-
+    
     @BeforeTransaction
     void bt() {
         if (!init) {
@@ -49,135 +52,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
         }
     }
 
-
     // 正式测试案例开始
-
-    @Test
-    public void 删除项目_$新建项目_添加成员_添加计费标准_删除项目() {
-        // 新建项目
-        GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
-
-        ResponseEntity<String> response = request(
-                "/admin/createXiangMu",
-                HttpMethod.POST,
-                "Admin",
-                "mingCheng, g1xt1",
-                "gongSiId, " + gongSi.getId()
-        );
-        checkCode(response, PPOK);
-
-        // 添加成员
-        Long xiangMuId = ppResponse.gainId(response);
-        YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
-
-        response = request(
-                "/admin/addXiangMuChengYuan",
-                HttpMethod.POST,
-                "Admin",
-                "xiangMuId, " + xiangMuId,
-                "yongHuId, " + yongHu.getId()
-        );
-        checkCode(response, PPOK);
-
-        // 添加计费标准
-        response = request(
-                "/admin/addXiangMuJiFeiBiaoZhun",
-                HttpMethod.POST,
-                "Admin",
-                "xiangMuId, " + xiangMuId,
-                "yongHuId, " + yongHu.getId(),
-                "kaiShi, 2000-01-01",
-                "xiaoShiFeiYong, 1.1"
-        );
-        checkCode(response, PPOK);
-
-        // 删除项目
-        response = request(
-                "/admin/deleteXiangMu/" + xiangMuId,
-                HttpMethod.DELETE,
-                "Admin"
-        );
-        checkCode(response, PPOK);
-
-        // 清空当前repository以从数据库获取最新数据
-        entityManager.clear();
-
-        gongSi = gongSiRepository.findOneByMingCheng("g1xt1");
-        Assert.assertNull(gongSi);
-    }
-
-
-    @Test
-    public void 添加项目计费标准_$设置公司结算日_添加结算日后的计费标准_添加同一天的计费标准() {
-        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
-        YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
-        GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
-
-        // 设置公司结算日
-        ResponseEntity<String> response = request(
-                "/admin/setGongSiJieSuanRi",
-                HttpMethod.POST,
-                "Admin",
-                "id, " + gongSi.getId(),
-                "jieSuanRi, 2000-01-02"
-        );
-        checkCode(response, PPOK);
-
-        // 添加结算日后的计费标准
-        response = request(
-                "/admin/addXiangMuJiFeiBiaoZhun",
-                HttpMethod.POST,
-                "Admin",
-                "xiangMuId, " + xiangMu.getId(),
-                "yongHuId, " + yongHu.getId(),
-                "kaiShi, 2000-02-01",
-                "xiaoShiFeiYong, 501"
-        );
-        checkCode(response, PPOK);
-
-        // 添加同一天的计费标准
-        response = request(
-                "/admin/addXiangMuJiFeiBiaoZhun",
-                HttpMethod.POST,
-                "Admin",
-                "xiangMuId, " + xiangMu.getId(),
-                "yongHuId, " + yongHu.getId(),
-                "kaiShi, 2000-02-01",
-                "xiaoShiFeiYong, 502"
-        );
-        checkCode(response, PPOK);
-
-        // 清空当前repository以从数据库获取最新数据
-        entityManager.clear();
-
-        xiangMu = xiangMuRepository.findOneByMingCheng("g1x1");
-        Boolean result = xiangMu.getJiFeiBiaoZhuns()
-                .stream()
-                .anyMatch(
-                        item ->
-                                item.getKaiShi().isEqual(LocalDate.of(2000, 2, 1))
-                                        &&
-                                        item.getXiaoShiFeiYong().compareTo(new BigDecimal("501")) == 0
-                                        &&
-                                        item.getYongHu().getId().compareTo(yongHu.getId()) == 0
-                );
-
-        Assert.assertFalse(result);
-
-        result = xiangMu.getJiFeiBiaoZhuns()
-                .stream()
-                .anyMatch(
-                        item ->
-                                item.getKaiShi().isEqual(LocalDate.of(2000, 2, 1))
-                                        &&
-                                        item.getXiaoShiFeiYong().compareTo(new BigDecimal("502")) == 0
-                                        &&
-                                        item.getYongHu().getId().compareTo(yongHu.getId()) == 0
-                );
-
-        Assert.assertTrue(result);
-    }
-
     @Test
     public void 生成报告_多次生成报告后结算日被设置成最晚一次的结束时间() throws JSONException {
         GongSi gongSi = gongSiRepository.findOneByMingCheng("g1");
@@ -189,7 +64,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
                 "gongSiId, " + gongSi.getId(),
                 "kaiShi, 1900-01-01",
                 "jieShu, 2900-12-31",
-                "setJiSuanRi, true"
+                "setJieSuanRi, true"
         );
         checkCode(response, PPOK);
 
@@ -200,14 +75,14 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
                 "gongSiId, " + gongSi.getId(),
                 "kaiShi, 1900-01-01",
                 "jieShu, 2900-12-30",
-                "setJiSuanRi, true"
+                "setJieSuanRi, true"
         );
         checkCode(response, PPOK);
 
         // 检查成功设置结算日
         // 清空当前repository以从数据库获取最新数据
         entityManager.clear();
-
+        gongSi = gongSiRepository.findOneByMingCheng("g1");
         gongSi.getJieSuanRi().isEqual(LocalDate.of(2900, 12, 31));
 
     }
@@ -260,8 +135,8 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
      * 生成gt1 2000-01-02 到 2000-01-04的报告
      * <p>
      * 确认<br>
-     * 期初balance: -15000
-     * 期末balance: -36000
+     * 期初balance: -14000
+     * 期末balance: -50000
      */
     @Test
     public void 生成报告_复杂操作后的报告() throws JSONException {
@@ -273,7 +148,8 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
                 "yongHuMing, yt1",
                 "kaiShi, 1900-01-01",
                 "miMa, 1234",
-                "xiaoShiFeiYong, 500"
+                "xiaoShiFeiYong, 500",
+                "xiaoShiTiCheng, 50"
         );
         checkCode(response, PPOK);
         Long yt1Id = ppResponse.gainId(response);
@@ -286,7 +162,8 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
                 "yongHuMing, yt2",
                 "kaiShi, 1900-01-01",
                 "miMa, 1234",
-                "xiaoShiFeiYong, 500"
+                "xiaoShiFeiYong, 500",
+                "xiaoShiTiCheng, 50"
         );
         checkCode(response, PPOK);
         Long yt2Id = ppResponse.gainId(response);
@@ -529,7 +406,7 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
                 "gongSiId, " + gt1Id,
                 "kaiShi, 2000-01-02",
                 "jieShu, 2000-01-04",
-                "setJiSuanRi, true"
+                "setJieSuanRi, true"
         );
         checkCode(response, PPOK);
 
@@ -540,4 +417,5 @@ public class Admin复杂成功 extends TimesheetApplicationTests {
         Assert.assertTrue(Math.abs((-14000) - qiChuBalance) < 1);
         Assert.assertTrue(Math.abs((-50000) - qiMoBalance) < 1);
     }
+    
 }
