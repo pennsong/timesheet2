@@ -28,7 +28,8 @@ import java.util.List;
 @Getter
 public class YongHu extends PPEntityTypeValidatableAbstract implements UserDetails {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy=GenerationType.TABLE, generator = "yonghu")
+    @TableGenerator(name = "yonghu", allocationSize = 1, table = "hibernate_sequences", pkColumnName = "sequence_name", valueColumnName = "current_val")
     private Long id;
 
     /**
