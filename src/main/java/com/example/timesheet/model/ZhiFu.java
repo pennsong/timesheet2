@@ -22,7 +22,8 @@ import java.time.LocalDate;
 @Getter
 public class ZhiFu extends PPEntityTypeValidatableAbstract {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy=GenerationType.TABLE, generator = "zhifu")
+    @TableGenerator(name = "zhifu", allocationSize = 1, table = "hibernate_sequences", pkColumnName = "sequence_name", valueColumnName = "current_val")
     private Long id;
 
     /**

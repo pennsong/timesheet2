@@ -1,0 +1,39 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="moda" id="Always-second-init-1">
+        <insert tableName="hibernate_sequences">
+            <column name="sequence_name" value="gong_si" />
+            <column name="current_val" value="0" />
+        </insert>
+    </changeSet>
+    <changeSet author="moda" id="Always-second-init-2">
+        <insert tableName="hibernate_sequences">
+            <column name="sequence_name" value="gong_zuo_ji_lu" />
+            <column name="current_val" value="0" />
+        </insert>
+    </changeSet>
+    <changeSet author="moda" id="Always-second-init-3">
+        <insert tableName="hibernate_sequences">
+            <column name="sequence_name" value="ti_cheng" />
+            <column name="current_val" value="0" />
+        </insert>
+    </changeSet>
+    <changeSet author="moda" id="Always-second-init-4">
+        <insert tableName="hibernate_sequences">
+            <column name="sequence_name" value="xiang_mu" />
+            <column name="current_val" value="0" />
+        </insert>
+    </changeSet>
+    <changeSet author="moda" id="Always-second-init-5">
+        <insert tableName="hibernate_sequences">
+            <column name="sequence_name" value="yong_hu" />
+            <column name="current_val" value="0" />
+        </insert>
+    </changeSet>
+    <changeSet author="moda" id="Always-second-init-6">
+        <insert tableName="hibernate_sequences">
+            <column name="sequence_name" value="zhi_fu" />
+            <column name="current_val" value="0" />
+        </insert>
+    </changeSet>
+</databaseChangeLog>

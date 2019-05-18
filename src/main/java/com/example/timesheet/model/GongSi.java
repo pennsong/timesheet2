@@ -7,10 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDate;
@@ -25,7 +22,8 @@ import java.time.LocalDateTime;
 @Getter
 public class GongSi extends PPEntityTypeValidatableAbstract {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy=GenerationType.TABLE, generator = "gongsi")
+    @TableGenerator(name = "gongsi", allocationSize = 1, table = "hibernate_sequences", pkColumnName = "sequence_name", valueColumnName = "current_val")
     private Long id;
 
     /**

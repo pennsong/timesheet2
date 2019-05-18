@@ -1,0 +1,173 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="moda (generated)" id="1558068163851-1">
+        <createTable tableName="gong_si">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="jie_suan_ri" type="TINYBLOB"/>
+            <column name="ming_cheng" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-2">
+        <createTable tableName="gong_zuo_ji_lu">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bei_zhu" type="VARCHAR(255)"/>
+            <column name="jie_shu" type="TINYBLOB"/>
+            <column name="kai_shi" type="TINYBLOB"/>
+            <column name="xiang_mu_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="yong_hu_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-3">
+        <createTable tableName="hibernate_sequences">
+            <column name="sequence_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="current_val" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-4">
+        <createTable tableName="ti_cheng">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bei_zhu" type="VARCHAR(255)"/>
+            <column name="jine" type="DECIMAL(19, 2)"/>
+            <column name="ri_qi" type="TINYBLOB"/>
+            <column name="yong_hu_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-5">
+        <createTable tableName="xiang_mu">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ming_cheng" type="VARCHAR(255)"/>
+            <column name="gong_si_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-6">
+        <createTable tableName="xiang_mu_ji_fei_biao_zhuns">
+            <column name="xiang_mu_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kai_shi" type="TINYBLOB"/>
+            <column name="xiao_shi_fei_yong" type="DECIMAL(19, 2)"/>
+            <column name="yong_hu_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-7">
+        <createTable tableName="xiang_mu_ti_cheng_biao_zhuns">
+            <column name="xiang_mu_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kai_shi" type="TINYBLOB"/>
+            <column name="xiao_shi_ti_cheng" type="DECIMAL(19, 2)"/>
+            <column name="yong_hu_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-8">
+        <createTable tableName="yong_hu">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="jia_mi_mi_ma" type="VARCHAR(255)"/>
+            <column name="jie_suan_ri" type="TINYBLOB"/>
+            <column name="xiao_shi_fei_yong" type="DECIMAL(19, 2)"/>
+            <column name="xiao_shi_ti_cheng" type="DECIMAL(19, 2)"/>
+            <column name="yong_hu_ming" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-9">
+        <createTable tableName="yong_hu_roles">
+            <column name="yong_hu_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="roles" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-10">
+        <createTable tableName="zhi_fu">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bei_zhu" type="VARCHAR(255)"/>
+            <column name="jine" type="DECIMAL(19, 2)"/>
+            <column name="ri_qi" type="TINYBLOB"/>
+            <column name="gong_si_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-11">
+        <addPrimaryKey columnNames="sequence_name" tableName="hibernate_sequences"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-12">
+        <addPrimaryKey columnNames="id" constraintName="gong_siPK" tableName="gong_si"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-13">
+        <addPrimaryKey columnNames="id" constraintName="gong_zuo_ji_luPK" tableName="gong_zuo_ji_lu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-14">
+        <addPrimaryKey columnNames="id" constraintName="ti_chengPK" tableName="ti_cheng"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-15">
+        <addPrimaryKey columnNames="id" constraintName="xiang_muPK" tableName="xiang_mu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-16">
+        <addPrimaryKey columnNames="id" constraintName="yong_huPK" tableName="yong_hu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-17">
+        <addPrimaryKey columnNames="id" constraintName="zhi_fuPK" tableName="zhi_fu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-18">
+        <addUniqueConstraint columnNames="ming_cheng" constraintName="UC_GONG_SIMING_CHENG_COL" tableName="gong_si"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-19">
+        <addUniqueConstraint columnNames="ming_cheng" constraintName="UC_XIANG_MUMING_CHENG_COL" tableName="xiang_mu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-20">
+        <addUniqueConstraint columnNames="yong_hu_ming" constraintName="UC_YONG_HUYONG_HU_MING_COL" tableName="yong_hu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-21">
+        <addForeignKeyConstraint baseColumnNames="xiang_mu_id" baseTableName="gong_zuo_ji_lu" constraintName="FK25fbabe3xf5p60bbhttj3y25l" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="xiang_mu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-22">
+        <addForeignKeyConstraint baseColumnNames="gong_si_id" baseTableName="zhi_fu" constraintName="FK3opq961l8thtltgoaakj27kvr" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="gong_si"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-23">
+        <addForeignKeyConstraint baseColumnNames="gong_si_id" baseTableName="xiang_mu" constraintName="FK3stt4kprgjd367win7t3c1c2d" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="gong_si"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-24">
+        <addForeignKeyConstraint baseColumnNames="yong_hu_id" baseTableName="xiang_mu_ji_fei_biao_zhuns" constraintName="FK6cew9drqjfoyhi1d1qqvidt3x" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="yong_hu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-25">
+        <addForeignKeyConstraint baseColumnNames="yong_hu_id" baseTableName="yong_hu_roles" constraintName="FK6kul1eyyw3fe32ropxf1do76" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="yong_hu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-26">
+        <addForeignKeyConstraint baseColumnNames="yong_hu_id" baseTableName="xiang_mu_ti_cheng_biao_zhuns" constraintName="FKg8ycrwkpac4qlrhpiqpeimya4" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="yong_hu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-27">
+        <addForeignKeyConstraint baseColumnNames="yong_hu_id" baseTableName="ti_cheng" constraintName="FKiylkxxucdkj9ld2eaf3606u16" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="yong_hu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-28">
+        <addForeignKeyConstraint baseColumnNames="xiang_mu_id" baseTableName="xiang_mu_ti_cheng_biao_zhuns" constraintName="FKpy0x5v3ad7k7m8891birfr1ad" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="xiang_mu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-29">
+        <addForeignKeyConstraint baseColumnNames="xiang_mu_id" baseTableName="xiang_mu_ji_fei_biao_zhuns" constraintName="FKqy2g2w594y7g24bbo8eypa463" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="xiang_mu"/>
+    </changeSet>
+    <changeSet author="moda (generated)" id="1558068163851-30">
+        <addForeignKeyConstraint baseColumnNames="yong_hu_id" baseTableName="gong_zuo_ji_lu" constraintName="FKs6ghwceii3j6omw83pxmhb2e2" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="yong_hu"/>
+    </changeSet>
+</databaseChangeLog>

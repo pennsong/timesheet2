@@ -35,7 +35,7 @@ public class GlobalControllerExceptionHandler {
             if (ex instanceof PPDuplicateException) {
                 jsonObject.put("code", "3000");
             } else {
-                if (ex.getMessage().contains("constraint") && ex.getMessage().contains("UK")) {
+                if (ex.getMessage().contains("constraint") && (ex.getMessage().contains("UK") || ex.getMessage().contains("UC"))) {
                     jsonObject.put("code", "3000");
                     customMessage = "违反唯一约束!";
                 } else if (ex.getCause().getCause().getMessage().contains("FOREIGN KEY")) {

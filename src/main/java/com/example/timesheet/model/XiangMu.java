@@ -27,7 +27,8 @@ import java.util.stream.Collectors;
 @Getter
 public class XiangMu extends PPEntityTypeValidatableAbstract {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy=GenerationType.TABLE, generator = "xiangmu")
+    @TableGenerator(name = "xiangmu", allocationSize = 1, table = "hibernate_sequences", pkColumnName = "sequence_name", valueColumnName = "current_val")
     private Long id;
 
     /**
