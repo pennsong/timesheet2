@@ -224,6 +224,32 @@ public class MainController {
         String password;
     }
 
+    @ApiOperation(value = "更新用户费用标准", tags = {"Admin", "用户"})
+    @RequestMapping(value = "/admin/setYongHuFeiYongBiaoZhun", method = RequestMethod.POST)
+    @DtoValid
+    public PPOK setYongHuFeiYongBiaoZhun(@RequestBody UpdateYongHuFeiYongBiaoZhunDto dto) {
+        mainService.changeYongHuFeiYongBiaoZhun(dto.yongHuId, dto.xiaoShiFeiYong, dto.xiaoShiTiCheng);
+        return PPOK.OK;
+    }
+
+    @ApiModel(description = "更新用户费用标准Dto")
+    @Data
+    public static class UpdateYongHuFeiYongBiaoZhunDto {
+        @NotNull
+        Long yongHuId;
+
+        @ApiModelProperty(notes = "小时费用", required = true)
+        @NotNull
+        @DecimalMin(value = "0", inclusive = false)
+        BigDecimal xiaoShiFeiYong;
+
+        @ApiModelProperty(notes = "小时提成", required = true)
+        @NotNull
+        @DecimalMin(value = "0", inclusive = true)
+        BigDecimal xiaoShiTiCheng;
+    }
+
+
     // todo 测试案例
     @ApiOperation(value = "查询公司", tags = {"Admin", "公司"})
     @RequestMapping(value = "/admin/queryGongSi", method = RequestMethod.POST)

@@ -141,6 +141,18 @@ public class MainService {
 
         yongHu.setJiaMiMiMa(passwordEncoder.encode(newPassword));
     }
+
+    /**
+     * 修改用户的小时费用和小时提成
+     * @param id
+     * @param xiaoShiFeiYong
+     * @param xiaoShiTiCheng
+     */
+    public void changeYongHuFeiYongBiaoZhun(Long id, BigDecimal xiaoShiFeiYong, BigDecimal xiaoShiTiCheng) {
+        YongHu yongHu = gainEntityWithExistsChecking(YongHu.class, id);
+        yongHu.setXiaoShiFeiYong(xiaoShiFeiYong);
+        yongHu.setXiaoShiTiCheng(xiaoShiTiCheng);
+    }
     
     /**
      * 设置用户个人结算日
