@@ -1,30 +1,21 @@
-package com.example.timesheet.admin.createYongHu;
+package com.example.timesheet.admin.setYongHuFeiYongBiaoZhun;
 
 import com.example.timesheet.TimesheetApplicationTests;
-import com.example.timesheet.exception.PPValidateException;
-import com.example.timesheet.model.*;
-import com.example.timesheet.util.PPJson;
+import com.example.timesheet.model.YongHu;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.springframework.http.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.transaction.BeforeTransaction;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 @Slf4j
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class 失败 extends TimesheetApplicationTests {
 	private static boolean init = false;
 
-    private static String dumpFileName = "admin.createYongHu.ShiBai";
+    private static String dumpFileName = "admin.setYongHuFeiYongBiaoZhun.ShiBai";
 
     @Override
     public void initData() {
@@ -54,27 +45,13 @@ public class 失败 extends TimesheetApplicationTests {
 
     // 正式测试案例开始
     @Test
-    public void 新建用户_重名() {
+    public void 设置用户的小时费用和小时提成_小时费用为0(){
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing("y1");
         ResponseEntity<String> response = request(
-                "/admin/createYongHu",
+                "/admin/setYongHuFeiYongBiaoZhun",
                 HttpMethod.POST,
                 "Admin",
-                "yongHuMing, y1",
-                "miMa, 1234",
-                "xiaoShiFeiYong, 500",
-                "xiaoShiTiCheng, 50"
-        );
-        checkCode(response, PPDuplicateExceptionCode);
-    }
-
-    @Test
-    public void 新建用户_小时费用为0(){
-        ResponseEntity<String> response = request(
-                "/admin/createYongHu",
-                HttpMethod.POST,
-                "Admin",
-                "yongHuMing, y1",
-                "miMa, 1234",
+                "yongHuId," + yongHu.getId(),
                 "xiaoShiFeiYong, 0",
                 "xiaoShiTiCheng, 50"
         );
