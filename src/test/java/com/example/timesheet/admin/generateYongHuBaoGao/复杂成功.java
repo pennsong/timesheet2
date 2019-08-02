@@ -335,6 +335,12 @@ public class 复杂成功 extends TimesheetApplicationTests {
         checkCode(response, PPOK);
 
         JSONObject jsonObject = new JSONObject(response.getBody());
+        JSONArray xmhz = ((JSONObject)jsonObject.get("data")).getJSONArray("项目汇总");
+        Assert.assertEquals(2, xmhz.length());
+        Assert.assertEquals("gt1x1", xmhz.getJSONObject(0).getString("项目"));
+        Assert.assertEquals("gt1x2", xmhz.getJSONObject(1).getString("项目"));
+        Assert.assertEquals(34, xmhz.getJSONObject(0).getInt("耗时"));
+        Assert.assertEquals(1, xmhz.getJSONObject(1).getInt("耗时"));
         double qiChuBalance = jsonObject.getJSONObject("data").getDouble("期初Balance");
         double qiMoBalance = jsonObject.getJSONObject("data").getDouble("期末Balance");
 
