@@ -751,6 +751,9 @@ public class MainService {
         // --查出结束日期前指定公司相关的工作记录和对应费用
         JSONArray gongZuoJiLusJsonArray = new JSONArray();
 
+        // --初始化项目记录array
+        JSONArray xiangMusJsonArray = new JSONArray();
+
         List<GongZuoJiLu> gongZuoJiLus = gongZuoJiLuRepository.findGongSiGongZuoJiLu(gongSiId, jieShu.plusDays(1).atStartOfDay());
 
         // 开始日期(0点)前的消费总额
@@ -763,6 +766,7 @@ public class MainService {
             JSONObject jsonObject = new JSONObject();
             XiangMu xiangMu = gongZuoJiLu.getXiangMu();
             List<JiFeiBiaoZhun> jiFeiBiaoZhuns = xiangMu.getJiFeiBiaoZhuns();
+
 
             // 找到适用的标准：标准开始日期 <= 工作记录开始日期
             Optional<JiFeiBiaoZhun> optionalJiFeiBiaoZhun = jiFeiBiaoZhuns.stream().filter(
@@ -797,6 +801,7 @@ public class MainService {
             ) {
                 jsonObject.put("开始", gongZuoJiLu.getKaiShi());
                 jsonObject.put("结束", gongZuoJiLu.getJieShu());
+                jsonObject.put("项目id", gongZuoJiLu.getXiangMu().getId());
                 jsonObject.put("项目", gongZuoJiLu.getXiangMu().getMingCheng());
                 jsonObject.put("人员", gongZuoJiLu.getYongHu().getYongHuMing());
                 jsonObject.put("耗时", (new BigDecimal("" + duration.getSeconds())).divide(new BigDecimal("" + 3600), MathContext.DECIMAL128));
@@ -805,6 +810,32 @@ public class MainService {
                 jsonObject.put("备注", gongZuoJiLu.getBeiZhu());
 
                 gongZuoJiLusJsonArray.put(jsonObject);
+            }
+
+        }
+        // 查找项目记录array中是否有这个项目，没有的话新增一条，有的话直接数据增加上去
+        for(int i = 0; i< gongZuoJiLusJsonArray.length(); i++) {
+            JSONObject jiLuJson = gongZuoJiLusJsonArray.getJSONObject(i);
+            Long xiangMuID = jiLuJson.getLong("项目id");
+            String xiangMu = jiLuJson.getString("项目");
+            BigDecimal haoShi = (BigDecimal) jiLuJson.get("耗时");
+            BigDecimal feiYong = (BigDecimal) jiLuJson.get("费用");
+            boolean findJiLu = false;
+            for(int j = 0; j < xiangMusJsonArray.length(); j++) {
+                JSONObject xiangMuJson = xiangMusJsonArray.getJSONObject(j);
+                if(xiangMuJson.getString("项目") == xiangMu && xiangMuJson.getLong("项目id") == xiangMuID) {
+                    findJiLu = true;
+                    xiangMuJson.put("耗时", haoShi.add((BigDecimal) xiangMuJson.get("耗时")));
+                    xiangMuJson.put("费用", feiYong.add((BigDecimal) xiangMuJson.get("费用")));
+                }
+            }
+            if(!findJiLu) {
+                JSONObject xiangMuJson = new JSONObject();
+                xiangMuJson.put("项目id", xiangMuID);
+                xiangMuJson.put("项目", xiangMu);
+                xiangMuJson.put("耗时", haoShi);
+                xiangMuJson.put("费用", feiYong);
+                xiangMusJsonArray.put(xiangMuJson);
             }
         }
         // --
@@ -841,6 +872,7 @@ public class MainService {
         reportJsonObject.put("结束", jieShu);
         reportJsonObject.put("期初Balance", kaiShiBalance);
         reportJsonObject.put("期末Balance", jieShuBalance);
+        reportJsonObject.put("项目汇总", xiangMusJsonArray);
         reportJsonObject.put("消费记录", gongZuoJiLusJsonArray);
         reportJsonObject.put("充值记录", zhiFusJsonArray);
 
@@ -857,6 +889,9 @@ public class MainService {
     public JSONObject generateYongHuBaoGao(Long yongHuId, LocalDate kaiShi, LocalDate jieShu) throws JSONException {
     		// -查出<=结束日期(即<结束日期第二天0点)的用户个人的工作记录和提成记录
         JSONArray gongZuoJiLusJsonArray = new JSONArray();
+
+        // --初始化项目记录array
+        JSONArray xiangMusJsonArray = new JSONArray();
 
         List<GongZuoJiLu> gongZuoJiLus = gongZuoJiLuRepository.findYongHuBaoGaoGongZuoJiLu(yongHuId, jieShu.plusDays(1).atStartOfDay());
 
@@ -904,6 +939,9 @@ public class MainService {
             ) {
                 jsonObject.put("开始", gongZuoJiLu.getKaiShi());
                 jsonObject.put("结束", gongZuoJiLu.getJieShu());
+                jsonObject.put("公司id", gongZuoJiLu.getXiangMu().getGongSi().getId());
+                jsonObject.put("项目id", gongZuoJiLu.getXiangMu().getId());
+                jsonObject.put("公司", gongZuoJiLu.getXiangMu().getGongSi().getMingCheng());
                 jsonObject.put("项目", gongZuoJiLu.getXiangMu().getMingCheng());
                 jsonObject.put("人员", gongZuoJiLu.getYongHu().getYongHuMing());
                 jsonObject.put("耗时", (new BigDecimal("" + duration.getSeconds())).divide(new BigDecimal("" + 3600), MathContext.DECIMAL128));
@@ -912,6 +950,36 @@ public class MainService {
                 jsonObject.put("备注", gongZuoJiLu.getBeiZhu());
 
                 gongZuoJiLusJsonArray.put(jsonObject);
+            }
+        }
+        // 查找项目记录array中是否有这个项目，没有的话新增一条，有的话直接数据增加上去
+        for(int i = 0; i< gongZuoJiLusJsonArray.length(); i++) {
+            JSONObject jiLuJson = gongZuoJiLusJsonArray.getJSONObject(i);
+            Long gongSiID = jiLuJson.getLong("公司id");
+            Long xiangMuID = jiLuJson.getLong("项目id");
+            String gongSi = jiLuJson.getString("公司");
+            String xiangMu = jiLuJson.getString("项目");
+            BigDecimal haoShi = (BigDecimal) jiLuJson.get("耗时");
+            BigDecimal shouRu = (BigDecimal) jiLuJson.get("收入");
+            boolean findJiLu = false;
+            for(int j = 0; j < xiangMusJsonArray.length(); j++) {
+                JSONObject xiangMuJson = xiangMusJsonArray.getJSONObject(j);
+                if(xiangMuJson.getString("项目") == xiangMu && xiangMuJson.getLong("项目id") == xiangMuID
+                    && xiangMuJson.getLong("公司id") == gongSiID) {
+                    findJiLu = true;
+                    xiangMuJson.put("耗时", haoShi.add((BigDecimal) xiangMuJson.get("耗时")));
+                    xiangMuJson.put("收入", shouRu.add((BigDecimal) xiangMuJson.get("收入")));
+                }
+            }
+            if(!findJiLu) {
+                JSONObject xiangMuJson = new JSONObject();
+                xiangMuJson.put("公司id", gongSiID);
+                xiangMuJson.put("项目id", xiangMuID);
+                xiangMuJson.put("公司", gongSi);
+                xiangMuJson.put("项目", xiangMu);
+                xiangMuJson.put("耗时", haoShi);
+                xiangMuJson.put("收入", shouRu);
+                xiangMusJsonArray.put(xiangMuJson);
             }
         }
         // --
@@ -948,6 +1016,7 @@ public class MainService {
         reportJsonObject.put("结束", jieShu);
         reportJsonObject.put("期初Balance", kaiShiBalance);
         reportJsonObject.put("期末Balance", jieShuBalance);
+        reportJsonObject.put("项目汇总", xiangMusJsonArray);
         reportJsonObject.put("工作记录", gongZuoJiLusJsonArray);
         reportJsonObject.put("提成记录", tiChengsJsonArray);
 

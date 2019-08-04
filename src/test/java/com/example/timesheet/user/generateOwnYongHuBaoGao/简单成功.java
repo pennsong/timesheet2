@@ -67,6 +67,12 @@ public class 简单成功 extends TimesheetApplicationTests {
         checkCode(response, PPOK);
         
         JSONObject jsonObject = new JSONObject(response.getBody());
+        JSONArray xmhz = ((JSONObject)jsonObject.get("data")).getJSONArray("项目汇总");
+        Assert.assertEquals(1, xmhz.length());
+        Assert.assertEquals("g1x1", xmhz.getJSONObject(0).getString("项目"));
+//        Assert.assertEquals("gt1x2", xmhz.getJSONObject(1).getString("项目"));
+        Assert.assertEquals(1, xmhz.getJSONObject(0).getInt("耗时"));
+//        Assert.assertEquals(2, xmhz.getJSONObject(1).getInt("耗时"));
         Assert.assertTrue( Math.abs(1-((JSONObject) (jsonObject.get("data"))).getDouble("期末Balance")) < 0.0000001);
 
         // 检查应当未更新设置结算日
@@ -90,6 +96,12 @@ public class 简单成功 extends TimesheetApplicationTests {
         checkCode(response, PPOK);
 
         JSONObject jsonObject = new JSONObject(response.getBody());
+        JSONArray xmhz = ((JSONObject)jsonObject.get("data")).getJSONArray("项目汇总");
+        Assert.assertEquals(1, xmhz.length());
+        Assert.assertEquals("g1x1", xmhz.getJSONObject(0).getString("项目"));
+//        Assert.assertEquals("gt1x2", xmhz.getJSONObject(1).getString("项目"));
+        Assert.assertEquals(1, xmhz.getJSONObject(0).getInt("耗时"));
+//        Assert.assertEquals(2, xmhz.getJSONObject(1).getInt("耗时"));
         Assert.assertTrue( Math.abs(2-((JSONObject) (jsonObject.get("data"))).getDouble("期末Balance")) < 0.0000001);
 
         // 检查应当未更新设置结算日
