@@ -14,6 +14,8 @@ import org.junit.runners.MethodSorters;
 import org.springframework.http.*;
 import org.springframework.test.context.transaction.BeforeTransaction;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -28,6 +30,12 @@ public class 简单成功 extends TimesheetApplicationTests {
     @Override
     public void initData() {
         basicInitData();
+        YongHu y1 = yongHuRepository.findOneByYongHuMing("y1");
+        XiangMu g2x1 = xiangMuRepository.findOneByMingCheng("g2x1");
+        mainService.addXiangMuChengYuan(g2x1.getId(), y1.getId());
+        mainService.addXiangMuJiFeiBiaoZhun(g2x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("4"));
+        mainService.addXiangMuTiChengBiaoZhun(g2x1.getId(), y1.getId(), LocalDate.of(2000, 1, 1), new BigDecimal("2"));
+
     }
     
     @BeforeTransaction
@@ -67,7 +75,7 @@ public class 简单成功 extends TimesheetApplicationTests {
         gongZuoJiLu2.put("kaiShi", "2000-01-03T00:00");
         gongZuoJiLu2.put("jieShu", "2000-01-04T00:00");
         gongZuoJiLu2.put("beiZhu", "testNote");
-        
+
         PPJson gongZuoJiLu3 = new PPJson();
         gongZuoJiLu3.put("yongHuMing", "y1");
         gongZuoJiLu3.put("xiangMuMingCheng", "g1x1");
@@ -75,10 +83,18 @@ public class 简单成功 extends TimesheetApplicationTests {
         gongZuoJiLu3.put("jieShu", "2000-01-05T10:00");
         gongZuoJiLu3.put("beiZhu", "testNote");
 
+        PPJson gongZuoJiLu4 = new PPJson();
+        gongZuoJiLu4.put("yongHuMing", "y1");
+        gongZuoJiLu4.put("xiangMuMingCheng", "g2x1");
+        gongZuoJiLu4.put("kaiShi", "2000-01-04T00:00");
+        gongZuoJiLu4.put("jieShu", "2000-01-05T10:00");
+        gongZuoJiLu4.put("beiZhu", "same with gongZuoJiLu3");
+
         JSONArray jsonArray = new JSONArray();
         jsonArray.put(gongZuoJiLu1);
         jsonArray.put(gongZuoJiLu2);
         jsonArray.put(gongZuoJiLu3);
+        jsonArray.put(gongZuoJiLu4);
 
         PPJson ppJson = new PPJson();
         ppJson.put("data", jsonArray);
@@ -142,7 +158,7 @@ public class 简单成功 extends TimesheetApplicationTests {
                 );
 
         Assert.assertTrue(result);
-        
+
         result = StreamSupport
                 .stream(gongZuoJiLus.spliterator(), false)
                 .anyMatch(
@@ -155,6 +171,22 @@ public class 简单成功 extends TimesheetApplicationTests {
                                 item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 5, 10, 0, 0))
                                 &&
                                 item.getBeiZhu().equals("testNote")
+                );
+
+        Assert.assertTrue(result);
+
+        result = StreamSupport
+                .stream(gongZuoJiLus.spliterator(), false)
+                .anyMatch(
+                        item -> item.getYongHu().getYongHuMing().equals("y1")
+                                &&
+                                item.getXiangMu().getMingCheng().equals("g2x1")
+                                &&
+                                item.getKaiShi().isEqual(LocalDateTime.of(2000, 1, 5, 0, 0, 0))
+                                &&
+                                item.getJieShu().isEqual(LocalDateTime.of(2000, 1, 5, 10, 0, 0))
+                                &&
+                                item.getBeiZhu().equals("same with gongZuoJiLu3")
                 );
 
         Assert.assertTrue(result);

@@ -809,7 +809,7 @@ public class MainController {
             if(kaiShi.isEqual(jieShu) || kaiShi.isAfter(jieShu)) {
 	    	    		throw new PPBusinessException("工作记录的开始时间等于或晚于结束时间，不允许添加！");
             }
-            mainService.createGongZuoJiLu(item.yongHuMing,
+            mainService.createGongZuoJiLuByAdmin(item.yongHuMing,
                     item.xiangMuMingCheng,
                     kaiShi,
                     jieShu,
@@ -1207,7 +1207,7 @@ public class MainController {
             if(kaiShi.isEqual(jieShu) || kaiShi.isAfter(jieShu)) {
 	    	    		throw new PPBusinessException("工作记录的开始时间等于或晚于结束时间，不允许添加！");
             }
-            mainService.createGongZuoJiLu(yongHuMing,
+            mainService.createGongZuoJiLuByYongHu(yongHuMing,
                     item.xiangMuMingCheng,
                     kaiShi,
                     jieShu,
