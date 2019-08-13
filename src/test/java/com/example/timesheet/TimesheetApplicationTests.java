@@ -256,7 +256,7 @@ public abstract class TimesheetApplicationTests {
         workRecord
         g1x1 y1 2000/1/1 10:01 11:01 testWorkNote
         */
-        mainService.createGongZuoJiLu(
+        mainService.createGongZuoJiLuByAdmin(
                 y1.getYongHuMing(),
                 g1x1.getMingCheng(),
                 LocalDateTime.of(2000, 1, 1, 10, 1),

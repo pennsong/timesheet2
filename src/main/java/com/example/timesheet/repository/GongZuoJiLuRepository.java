@@ -97,6 +97,27 @@ public interface GongZuoJiLuRepository extends PagingAndSortingRepository<GongZu
     List<GongZuoJiLu> findYongHuBaoGaoGongZuoJiLu(@Param("yongHuId") Long yongHuId, @Param("jieShu") LocalDateTime jieShu);
 
     /**
+     * 指定人员的指定时间段的指定项目的重叠的工作记录：工作记录的开始 < 结束日期 && 工作记录的结束 > 开始日期
+     *
+     * @param yongHuId 用户id
+     * @param xiangMuIds 项目id数组
+     * @param kaiShi   开始日期时间 大于
+     * @param jieShu   结束日期时间 小于
+     */
+    @Query("select count(g) from " +
+            "GongZuoJiLu g " +
+            "join g.yongHu y " +
+            "join g.xiangMu x " +
+            "where y.id = :yongHuId " +
+            "and " +
+            "x.id in :xiangMuIds " +
+            "and " +
+            "g.jieShu > :kaiShi " +
+            "and " +
+            "g.kaiShi < :jieShu")
+    Long findByOverlapWorkRecordsWithinXiangMus(@Param("yongHuId") Long yongHuId, @Param("xiangMuIds") Long[] xiangMuIds, @Param("kaiShi") LocalDateTime kaiShi, @Param("jieShu") LocalDateTime jieShu);
+
+    /**
      * 指定人员的指定时间段重叠的工作记录：工作记录的开始 < 结束日期 && 工作记录的结束 > 开始日期
      *
      * @param yongHuId 用户id

@@ -438,39 +438,90 @@ public class MainService {
     // -工作记录
 
     /**
-     * 新建工作记录，因最小计算单位为秒，因此先行去除时间的微秒数
+     * Admin新建工作记录，因最小计算单位为秒，因此先行去除时间的微秒数
      * <p>
-     * 1) 项目没有用户的计费标准、提成标准, 抛异常, 不允许添加<br>
-     * 2) 工作记录的开始时间早于或等于项目所属公司的结算日以及工人结算日, 抛异常, 不允许添加<br>
-     * 3) 如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录<br>
-     * 4) 如工作记录时间段有重叠, 抛异常, 不允许添加
+     * 1) 如工作记录时间段在同一公司内有重叠, 抛异常, 不允许添加 <br>
+     * 2) 项目没有用户的计费标准、提成标准, 抛异常, 不允许添加<br>
+     * 3) 工作记录的开始时间早于或等于项目所属公司的结算日以及工人结算日, 抛异常, 不允许添加<br>
+     * 4) 如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录<br>
      *
      * @param yongHuMing       用户名
      * @param xiangMuMingCheng 项目名称
      * @param kaiShi           工作记录开始时间
      * @param jieShu           工作记录结束时间
      */
-    public void createGongZuoJiLu(String yongHuMing, String xiangMuMingCheng, LocalDateTime kaiShi, LocalDateTime jieShu, String beiZhu) {
+    public void createGongZuoJiLuByAdmin(String yongHuMing, String xiangMuMingCheng, LocalDateTime kaiShi, LocalDateTime jieShu, String beiZhu) {
         YongHu yongHu = yongHuRepository.findOneByYongHuMing(yongHuMing);
+        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng(xiangMuMingCheng);
+        // 检查其他参数
+        checkGongZuoJiLuCreation(yongHu, xiangMu, kaiShi, jieShu, beiZhu);
+        // 检查工作时间段重叠
+        // 获取此用户的所有参与的项目中跟参数项目在同一公司的项目们
+        Long[] allXiangMuIds = xiangMuRepository.findAllIdBelongGongSi(xiangMu.getGongSi().getId());
+        Long overLapedGongZuoJiLuCount = gongZuoJiLuRepository.findByOverlapWorkRecordsWithinXiangMus(yongHu.getId(), allXiangMuIds, kaiShi, jieShu);
+        if (overLapedGongZuoJiLuCount > 0) {
+            throw new PPBusinessException("工作记录时间段在项目公司内部有重叠, 不允许添加!");
+        }
+        createGongZuoJiLu(yongHu, xiangMu, kaiShi, jieShu, beiZhu);
+    }
+
+    /**
+     * 用户新建工作记录，因最小计算单位为秒，因此先行去除时间的微秒数
+     * <p>
+     * 1) 项目没有用户的计费标准、提成标准, 抛异常, 不允许添加<br>
+     * 2) 工作记录的开始时间早于或等于项目所属公司的结算日以及工人结算日, 抛异常, 不允许添加<br>
+     * 3) 如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录<br>
+     * 4) 如工作记录时间段有重叠, 抛异常, 不允许添加 <br>
+     *
+     * @param yongHuMing       用户名
+     * @param xiangMuMingCheng 项目名称
+     * @param kaiShi           工作记录开始时间
+     * @param jieShu           工作记录结束时间
+     */
+    public void createGongZuoJiLuByYongHu(String yongHuMing, String xiangMuMingCheng, LocalDateTime kaiShi, LocalDateTime jieShu, String beiZhu) {
+        YongHu yongHu = yongHuRepository.findOneByYongHuMing(yongHuMing);
+        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng(xiangMuMingCheng);
+        // 检查其他参数
+        checkGongZuoJiLuCreation(yongHu, xiangMu, kaiShi, jieShu, beiZhu);
+        // 检查工作时间段重叠
+        Long overLapedGongZuoJiLuCount = gongZuoJiLuRepository.findByOverlapWorkRecords(yongHu.getId(), kaiShi, jieShu);
+        if (overLapedGongZuoJiLuCount > 0) {
+            throw new PPBusinessException("工作记录时间段有重叠, 不允许添加!");
+        }
+        createGongZuoJiLu(yongHu, xiangMu, kaiShi, jieShu, beiZhu);
+    }
+
+    /**
+     * 检查新建工作记录的参数是否合法，因最小计算单位为秒，因此先行去除时间的微秒数
+     * <p>
+     * 1) 项目没有用户的计费标准、提成标准, 抛异常, 不允许添加<br>
+     * 2) 工作记录的开始时间早于或等于项目所属公司的结算日以及工人结算日, 抛异常, 不允许添加<br>
+     * 3) 工作时间重叠的检查由具体引用此方法的方法完成检查
+     * @param yongHu
+     * @param xiangMu
+     * @param kaiShi
+     * @param jieShu
+     * @param beiZhu
+     */
+    private void checkGongZuoJiLuCreation(YongHu yongHu, XiangMu xiangMu, LocalDateTime kaiShi, LocalDateTime jieShu, String beiZhu) {
         if (yongHu == null) {
             throw new PPItemNotExistException("指定用户不存在!");
         }
 
-        XiangMu xiangMu = xiangMuRepository.findOneByMingCheng(xiangMuMingCheng);
         if (xiangMu == null) {
             throw new PPItemNotExistException("指定项目不存在!");
         }
 
         // --项目没有用户的计费标准, 抛异常, 不允许添加
-        if (xiangMu.getJiFeiBiaoZhuns().stream().noneMatch(item -> item.getYongHu().getYongHuMing().equals(yongHuMing))) {
+        if (xiangMu.getJiFeiBiaoZhuns().stream().noneMatch(item -> item.getYongHu().getYongHuMing().equals(yongHu.getYongHuMing()))) {
             throw new PPBusinessException("项目没有用户的计费标准, 不允许添加!");
         }
         // --项目没有用户的提成标准, 抛异常, 不允许添加
-        if (xiangMu.getTiChengBiaoZhuns().stream().noneMatch(item -> item.getYongHu().getYongHuMing().equals(yongHuMing))) {
+        if (xiangMu.getTiChengBiaoZhuns().stream().noneMatch(item -> item.getYongHu().getYongHuMing().equals(yongHu.getYongHuMing()))) {
             throw new PPBusinessException("项目没有用户的提成标准, 不允许添加!");
         }
         // --
-        
+
         // --工作记录的时间早于或等于项目所属公司的结算日, 抛异常, 不允许添加
         LocalDate gongSiJieSuanRi = xiangMu.getGongSi().getJieSuanRi();
         if (kaiShi.toLocalDate().isBefore(gongSiJieSuanRi) || kaiShi.toLocalDate().isEqual(gongSiJieSuanRi)) {
@@ -481,13 +532,27 @@ public class MainService {
         if (kaiShi.toLocalDate().isBefore(yongHuJieSuanRi) || kaiShi.toLocalDate().isEqual(yongHuJieSuanRi)) {
             throw new PPBusinessException("工作记录的时间早于或等于用户个人结算日, 不允许添加!");
         }
-        // --
+    }
+
+    /**
+     * 新建工作记录，因最小计算单位为秒，因此先行去除时间的微秒数
+     * <p>
+     * 1) 如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录<br>
+     *
+     * @param yongHu       用户
+     * @param xiangMu      项目
+     * @param kaiShi       工作记录开始时间
+     * @param jieShu       工作记录结束时间
+     */
+    private void createGongZuoJiLu(YongHu yongHu, XiangMu xiangMu, LocalDateTime kaiShi, LocalDateTime jieShu, String beiZhu) {
 
         // --
-        Long overLapedGongZuoJiLuCount = gongZuoJiLuRepository.findByOverlapWorkRecords(yongHu.getId(), kaiShi, jieShu);
-        if (overLapedGongZuoJiLuCount > 0) {
-            throw new PPBusinessException("工作记录时间段有重叠, 不允许添加!");
-        }
+
+//        // --
+//        Long overLapedGongZuoJiLuCount = gongZuoJiLuRepository.findByOverlapWorkRecords(yongHu.getId(), kaiShi, jieShu);
+//        if (overLapedGongZuoJiLuCount > 0) {
+//            throw new PPBusinessException("工作记录时间段有重叠, 不允许添加!");
+//        }
         // --
 
         // --如工作记录跨越24:00则拆分成以所属日期为粒度的多条记录
